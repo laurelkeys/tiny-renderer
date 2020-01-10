@@ -1,23 +1,13 @@
 # Repo specific
 .clang-format
 *.tga
+*.obj
 
 # VS Code
 .vscode
 
-# Prerequisites
-*.d
-
 # Compiled Object files
 *.o
-*.obj
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
 
 # Executables
 *.exe
-*.out
-*.app
