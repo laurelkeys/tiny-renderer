@@ -46,35 +46,33 @@ void line(Vec2i p0, Vec2i p1,
 
 void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
               TGAImage &image, const TGAColor &color) {
+    if (p0.y == p1.y && p0.y == p2.y)
+        return; // ignore degenerate triangles
+
     // sort the vertices by their y-coordinates
     if (p1.y < p0.y) std::swap(p0, p1);
     if (p2.y < p0.y) std::swap(p0, p2);
     if (p2.y < p1.y) std::swap(p1, p2);
 
-    line(p0, p2, image, red);   // A
-    line(p0, p1, image, green); // B
-    line(p1, p2, image, blue);  // C
+    // A.y = B.y + C.y
+    Vec2i A = p2 - p0;
+    Vec2i B = p1 - p0;
+    Vec2i C = p2 - p1;
 
-    // 1 / slope = (xf - xi) / (yf - yi)
-    float invA = (p2.x - p0.x) / (float) (p2.y - p0.y);
-    float invB = (p1.x - p0.x) / (float) (p1.y - p0.y);
-    float invC = (p2.x - p1.x) / (float) (p2.y - p1.y);
+    for (int y = 0; y <= A.y; ++y) {
+        bool upper_side = (y > B.y) || (B.y == 0);
 
-    const TGAColor yellow(255, 255, 0, 255);
-    const TGAColor magenta(255, 0, 255, 255);
-    const TGAColor cyan(0, 255, 255, 255);
+        // lerp segments
+        int start = p0.x + A.x * (y / (float) A.y);
+        int end = upper_side ? p1.x + C.x * ((y - B.y) / (float) C.y) 
+                             : p0.x + B.x * (y / (float) B.y);
+        if (start > end)
+            std::swap(start, end);
 
-    // color the bottom side of the triangle
-    for (int y = p0.y; y < p1.y; ++y)
-        line(Vec2i(p0.x + (y - p0.y) * invA, y), 
-             Vec2i(p0.x + (y - p0.y) * invB, y), 
-             image, color);
-
-    // color the upper side of the triangle
-    for (int y = p1.y; y <= p2.y; ++y)
-        line(Vec2i(p0.x + (y - p0.y) * invA, y), // A
-             Vec2i(p1.x + (y - p1.y) * invC, y), // C
-             image, color);
+        // obs.: we don't call line() to avoid its checks
+        for (int x = start; x <= end; ++x)
+            image.set(x, p0.y + y, color);
+    }
 }
 
 int main(int argc, char **argv) {
