@@ -98,6 +98,14 @@ template <class T> inline Vec3<T> operator*(float f, const Vec3<T> &v) {
     return Vec3<T>(v.x * f, v.y * f, v.z * f);
 }
 
+template <class T> inline Vec3<T> dot(const Vec3<T> &v1, const Vec3<T> &v2) {
+    return v1 * v2;
+}
+
+template <class T> inline Vec3<T> cross(const Vec3<T> &v1, const Vec3<T> &v2) {
+    return v1 ^ v2;
+}
+
 typedef Vec2<float> Vec2f;
 typedef Vec2<int> Vec2i;
 

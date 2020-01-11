@@ -7,8 +7,10 @@ const TGAColor red   = TGAColor(255,   0,   0, 255);
 const TGAColor green = TGAColor(  0, 255,   0, 255);
 const TGAColor blue  = TGAColor(  0,   0, 255, 255);
 
-const int WIDTH  = 200;
-const int HEIGHT = 200;
+const int WIDTH  = 800;
+const int HEIGHT = 800;
+const int HALF_WIDTH  = 400;
+const int HALF_HEIGHT = 400;
 
 void line(Vec2i p0, Vec2i p1, 
           TGAImage &image, const TGAColor &color) {
@@ -76,18 +78,36 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
 }
 
 int main(int argc, char **argv) {
-    TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
-    
-    Vec2i p0[3] = { Vec2i( 10,  70), Vec2i( 50, 160), Vec2i( 70,  80) };
-    Vec2i p1[3] = { Vec2i(180,  50), Vec2i(150,   1), Vec2i( 70, 180) };
-    Vec2i p2[3] = { Vec2i(180, 150), Vec2i(120, 160), Vec2i(130, 180) };
 
-    triangle(p0[0], p0[1], p0[2], image, white);
-    triangle(p1[0], p1[1], p1[2], image, white);
-    triangle(p2[0], p2[1], p2[2], image, white);
+    Vec3f light_direction(0.0, 0.0, -1.0);
+    
+    TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
+    Model *model = new Model(argc >= 2 ? argv[1] : "obj/head.obj");
+    
+    for (int i = 0; i < model->nfaces(); ++i) {
+        std::vector<int> face = model->face(i);
+        
+        Vec3f world_coords[3];
+        Vec2i screen_coords[3];
+        for (int j = 0; j < 3; ++j) {
+            world_coords[j] = model->vert(face[j]);
+            screen_coords[j] = Vec2i((world_coords[j].x + 1) * HALF_WIDTH, 
+                                     (world_coords[j].y + 1) * HALF_HEIGHT);
+        }
+        
+        Vec3f normal = cross(world_coords[2] - world_coords[0], 
+                             world_coords[1] - world_coords[0]).normalize();
+        float intensity = normal * light_direction;
+        
+        if (intensity > 0) {
+            triangle(screen_coords[0], screen_coords[1], screen_coords[2], 
+                     image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+        }
+    }
 
     image.flip_vertically(); // have the origin at the bottom-left corner
     image.write_tga_file("output.tga");
 
+    delete model;
     return 0;
 }
