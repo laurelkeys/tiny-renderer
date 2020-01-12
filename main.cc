@@ -1,3 +1,6 @@
+#include <limits>
+#include <memory>
+
 #include "model.hh"
 #include "geometry.hh"
 #include "tgaimage.hh"
@@ -9,10 +12,8 @@ const TGAColor blue  = TGAColor(  0,   0, 255, 255);
 
 const int WIDTH  = 800;
 const int HEIGHT = 800;
-const int HALF_WIDTH  = 400;
-const int HALF_HEIGHT = 400;
 
-void line(Vec2i p0, Vec2i p1, 
+void line(Vec2i p0, Vec2i p1,
           TGAImage &image, const TGAColor &color) {
     bool transposed = false;
     if (std::abs(p0.x - p1.x) < std::abs(p0.y - p1.y)) {
@@ -30,7 +31,7 @@ void line(Vec2i p0, Vec2i p1,
     int dy = p1.y - p0.y;
     int derror2 = std::abs(dy) * 2;
     int error2 = 0;
-    
+
     int y = p0.y;
     for (int x = p0.x; x <= p1.x; ++x) {
         if (transposed)
@@ -66,7 +67,7 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
 
         // lerp segments
         int start = p0.x + A.x * (y / (float) A.y);
-        int end = upper_side ? p1.x + C.x * ((y - B.y) / (float) C.y) 
+        int end = upper_side ? p1.x + C.x * ((y - B.y) / (float) C.y)
                              : p0.x + B.x * (y / (float) B.y);
         if (start > end)
             std::swap(start, end);
@@ -78,36 +79,35 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
 }
 
 int main(int argc, char **argv) {
+    TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
+    std::unique_ptr<Model> model = std::make_unique<Model>(argc >= 2 ? argv[1]
+                                                                     : "obj/african_head/african_head.obj");
 
     Vec3f light_direction(0.0, 0.0, -1.0);
-    
-    TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
-    Model *model = new Model(argc >= 2 ? argv[1] : "obj/head.obj");
-    
+
     for (int i = 0; i < model->nfaces(); ++i) {
         std::vector<int> face = model->face(i);
-        
+
         Vec3f world_coords[3];
         Vec2i screen_coords[3];
         for (int j = 0; j < 3; ++j) {
             world_coords[j] = model->vert(face[j]);
-            screen_coords[j] = Vec2i((world_coords[j].x + 1) * HALF_WIDTH, 
-                                     (world_coords[j].y + 1) * HALF_HEIGHT);
+            screen_coords[j] = Vec2i((world_coords[j].x + 1) * WIDTH / 2,
+                                     (world_coords[j].y + 1) * HEIGHT / 2);
         }
-        
-        Vec3f normal = cross(world_coords[2] - world_coords[0], 
-                             world_coords[1] - world_coords[0]).normalize();
-        float intensity = normal * light_direction;
-        
+
+        Vec3f normal = cross(world_coords[2] - world_coords[0],
+                             world_coords[1] - world_coords[0])
+                           .normalize();
+        float intensity = light_direction * normal;
+        // intensity < 0 means the light is coming from behind the polygon,
+        // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2], 
+            triangle(screen_coords[0], screen_coords[1], screen_coords[2],
                      image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         }
     }
 
     image.flip_vertically(); // have the origin at the bottom-left corner
     image.write_tga_file("output.tga");
-
-    delete model;
-    return 0;
 }

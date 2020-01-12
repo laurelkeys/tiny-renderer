@@ -1,7 +1,7 @@
 # Repo specific
 .clang-format
-*.tga
-*.obj
+/*.tga
+/*.png
 
 # VS Code
 .vscode
