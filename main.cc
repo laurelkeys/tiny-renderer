@@ -47,6 +47,37 @@ void line(Vec2i p0, Vec2i p1,
     }
 }
 
+Vec3f barycentric_coords(Vec2f A, Vec2f B, Vec2f C, Vec2f P) {
+    // given a triangle ABC and a point P, defined by:
+    //   P = (1-u-v) * A + u * B + v * C = A + u * AB + v * AC,
+    // P is inside the triangle iff:
+    //   (0 <= u, v <= 1) and (u + v <= 1)
+    // obs.:
+    //   A - P = PA, therefore 0 = u * AB + v * AC + PA
+    Vec2f AB = B - A;
+    Vec2f AC = C - A;
+    Vec2f PA = A - P;
+
+    Vec3f coords = cross(Vec3f(AC.x, AB.x, PA.x),
+                         Vec3f(AC.y, AB.y, PA.y));
+    //           = Vec3f(AB.x * PA.y - AB.y * PA.x,
+    //                   PA.x * AC.y - PA.y * AC.x,
+    //                   AC.x * AB.y - AC.y * AB.x)
+
+    //  | P.x = A.x + u * AB.x + v * AC.x,
+    //  | P.y = A.y + u * AB.y + v * AC.y
+    //  -> v = (AP.y - u * AB.y) / AC.y
+    //  -> u = ... = (AP.x * AC.y - AC.x * AP.y) / (AB.x * AC.y - AC.x * AB.y)
+    //             = (-PA.x * AC.y + AC.x * PA.y) / -(AC.x * AB.y - AB.x * AC.y)
+    //             = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
+    //             = coords.y / coords.z
+    //  -> v = coords.x / coords.z
+
+    return Vec3f(1 - (coords.x + coords.y) / coords.z, // 1 - u - v
+                 coords.y / coords.z,  // u = 
+                 coords.x / coords.z); // v = 
+}
+
 void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
               TGAImage &image, const TGAColor &color) {
     if (p0.y == p1.y && p0.y == p2.y)
@@ -80,8 +111,8 @@ void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
 
 int main(int argc, char **argv) {
     TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
-    std::unique_ptr<Model> model = std::make_unique<Model>(argc >= 2 ? argv[1]
-                                                                     : "obj/african_head/african_head.obj");
+    auto model = std::make_unique<Model>(argc >= 2 ? argv[1]
+                                                   : "obj/african_head/african_head.obj");
 
     Vec3f light_direction(0.0, 0.0, -1.0);
 
@@ -97,8 +128,7 @@ int main(int argc, char **argv) {
         }
 
         Vec3f normal = cross(world_coords[2] - world_coords[0],
-                             world_coords[1] - world_coords[0])
-                           .normalize();
+                             world_coords[1] - world_coords[0]).normalize();
         float intensity = light_direction * normal;
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)

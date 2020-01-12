@@ -62,16 +62,16 @@ template <class T> struct Vec3 {
                        x * v.y - y * v.x); // cross product
     }
 
-    float norm() const {
+    float length() const {
         return std::sqrt(x * x + y * y + z * z);
     }
 
-    float norm_squared() const {
+    float length_squared() const {
         return x * x + y * y + z * z;
     }
 
     Vec3<T> &normalize(T l = 1) {
-        *this = (*this) * (l / norm());
+        *this = (*this) * (l / length());
         return *this;
     }
 
