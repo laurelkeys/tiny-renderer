@@ -65,7 +65,7 @@ Vec3f barycentric_coords(Vec2i A, Vec2i B, Vec2i C, Vec2i P) {
                  coords.x / coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)   
 }
 
-void triangle(Vec3i p0, Vec3i p1, Vec3i p2, 
+void triangle(Vec3i p0, Vec3i p1, Vec3i p2, float z_buffer[WIDTH * HEIGHT], 
               TGAImage &image, const TGAColor &color) {
     Vec2f bbox_min(std::max(0, std::min(std::min(p0.x, p1.x), p2.x)),
                    std::max(0, std::min(std::min(p0.y, p1.y), p2.y)));
@@ -78,12 +78,11 @@ void triangle(Vec3i p0, Vec3i p1, Vec3i p2,
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
                 continue; // point lies outside the triangle
 
-            image.set(P.x, P.y, color);
-            // P.z = bc_screen * Vec3f(p0.z, p1.z, p2.z);
-            // if (zbuffer[int(P.x + P.y * WIDTH)] < P.z) {
-            //     zbuffer[int(P.x + P.y * WIDTH)] = P.z;
-            //     image.set(P.x, P.y, color);
-            // }
+            P.z = bc_screen * Vec3f(p0.z, p1.z, p2.z);
+            if (z_buffer[int(P.x + P.y * WIDTH)] < P.z) {
+                z_buffer[int(P.x + P.y * WIDTH)] = P.z;
+                image.set(P.x, P.y, color);
+            }
         }
     }
 }
@@ -126,6 +125,9 @@ int main(int argc, char **argv) {
 
     Vec3f light_direction(0.0, 0.0, -1.0);
 
+    float *z_buffer = new float[WIDTH * HEIGHT];
+    std::fill_n(z_buffer, WIDTH * HEIGHT, std::numeric_limits<float>::lowest());
+
     for (int i = 0; i < model->nfaces(); ++i) {
         std::vector<int> face = model->face(i);
 
@@ -144,7 +146,7 @@ int main(int argc, char **argv) {
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2],
+            triangle(screen_coords[0], screen_coords[1], screen_coords[2], z_buffer, 
                      image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         }
     }
