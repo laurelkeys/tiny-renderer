@@ -47,35 +47,21 @@ void line(Vec2i p0, Vec2i p1,
     }
 }
 
-Vec3f barycentric_coords(Vec2f A, Vec2f B, Vec2f C, Vec2f P) {
+Vec3f barycentric_coords(Vec2i A, Vec2i B, Vec2i C, Vec2i P) {
+    Vec2i AB = B - A;
+    Vec2i AC = C - A;
+    Vec2i PA = A - P;
+
     // given a triangle ABC and a point P, defined by:
     //   P = (1-u-v) * A + u * B + v * C = A + u * AB + v * AC,
     // P is inside the triangle iff:
     //   (0 <= u, v <= 1) and (u + v <= 1)
-    // obs.:
-    //   A - P = PA, therefore 0 = u * AB + v * AC + PA
-    Vec2f AB = B - A;
-    Vec2f AC = C - A;
-    Vec2f PA = A - P;
-
     Vec3f coords = cross(Vec3f(AC.x, AB.x, PA.x),
                          Vec3f(AC.y, AB.y, PA.y));
-    //           = Vec3f(AB.x * PA.y - AB.y * PA.x,
-    //                   PA.x * AC.y - PA.y * AC.x,
-    //                   AC.x * AB.y - AC.y * AB.x)
 
-    //  | P.x = A.x + u * AB.x + v * AC.x,
-    //  | P.y = A.y + u * AB.y + v * AC.y
-    //  -> v = (AP.y - u * AB.y) / AC.y
-    //  -> u = ... = (AP.x * AC.y - AC.x * AP.y) / (AB.x * AC.y - AC.x * AB.y)
-    //             = (-PA.x * AC.y + AC.x * PA.y) / -(AC.x * AB.y - AB.x * AC.y)
-    //             = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
-    //             = coords.y / coords.z
-    //  -> v = coords.x / coords.z
-
-    return Vec3f(1 - (coords.x + coords.y) / coords.z, // 1 - u - v
-                 coords.y / coords.z,  // u = 
-                 coords.x / coords.z); // v = 
+    return Vec3f(1.0f - (coords.x + coords.y) / coords.z, // 1 - u - v
+                 coords.y / coords.z,  // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
+                 coords.x / coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)   
 }
 
 void triangle(Vec2i p0, Vec2i p1, Vec2i p2,

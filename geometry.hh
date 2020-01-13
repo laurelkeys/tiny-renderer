@@ -7,8 +7,8 @@
 
 template <class T> struct Vec2 {
     union {
-        struct { T u, v; };
         struct { T x, y; };
+        struct { T u, v; };
         T raw[2];
     };
     
@@ -16,16 +16,16 @@ template <class T> struct Vec2 {
         : u(0)
         , v(0) { }
     
-    Vec2(T _u, T _v)
-        : u(_u)
-        , v(_v) { }
-    
-    inline Vec2<T> operator+(const Vec2<T> &v) const { return Vec2<T>(this->u + v.u, this->v + v.v); }
-    inline Vec2<T> operator-(const Vec2<T> &v) const { return Vec2<T>(this->u - v.u, this->v - v.v); }
-    
-    inline Vec2<T> operator*(float f) const { return Vec2<T>(u * f, v * f); }
+    Vec2(T _x, T _y)
+        : u(_x)
+        , v(_y) { }
     
     template <class> friend std::ostream &operator<<(std::ostream &s, Vec2<T> &v);
+    
+    inline Vec2<T> operator+(const Vec2<T> &v) const { return Vec2<T>(x + v.x, y + v.y); }
+    inline Vec2<T> operator-(const Vec2<T> &v) const { return Vec2<T>(x - v.x, y - v.y); }
+    
+    inline Vec2<T> operator*(float f) const { return Vec2<T>(x * f, y * f); }
 };
 
 /////////////////////////////////////////
@@ -46,6 +46,8 @@ template <class T> struct Vec3 {
         : x(_x)
         , y(_y)
         , z(_z) { }
+
+    template <class> friend std::ostream &operator<<(std::ostream &s, Vec3<T> &v);
     
     inline Vec3<T> operator+(const Vec3<T> &v) const { return Vec3<T>(x + v.x, y + v.y, z + v.z); }
     inline Vec3<T> operator-(const Vec3<T> &v) const { return Vec3<T>(x - v.x, y - v.y, z - v.z); }
@@ -54,12 +56,6 @@ template <class T> struct Vec3 {
 
     inline T operator*(const Vec3<T> &v) const {
         return x * v.x + y * v.y + z * v.z; // dot product
-    }
-
-    inline Vec3<T> operator^(const Vec3<T> &v) const {
-        return Vec3<T>(y * v.z - z * v.y, 
-                       z * v.x - x * v.z, 
-                       x * v.y - y * v.x); // cross product
     }
 
     float length() const {
@@ -75,18 +71,20 @@ template <class T> struct Vec3 {
         return *this;
     }
 
-    template <class> friend std::ostream &operator<<(std::ostream &s, Vec3<T> &v);
+    inline const Vec2<T> xy() const {
+        return *(Vec2<T> *) this;
+    }
 };
 
 /////////////////////////////////////////
 
 template <class T> std::ostream &operator<<(std::ostream &s, Vec2<T> &v) {
-    s << "(" << v.x << ", " << v.y << ")\n";
+    s << "(" << v.x << ", " << v.y << ")";
     return s;
 }
 
 template <class T> std::ostream &operator<<(std::ostream &s, Vec3<T> &v) {
-    s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
+    s << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return s;
 }
 
@@ -98,12 +96,14 @@ template <class T> inline Vec3<T> operator*(float f, const Vec3<T> &v) {
     return Vec3<T>(v.x * f, v.y * f, v.z * f);
 }
 
-template <class T> inline Vec3<T> dot(const Vec3<T> &v1, const Vec3<T> &v2) {
-    return v1 * v2;
+template <class T> inline T dot(const Vec3<T> &v1, const Vec3<T> &v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; // v1 * v2
 }
 
 template <class T> inline Vec3<T> cross(const Vec3<T> &v1, const Vec3<T> &v2) {
-    return v1 ^ v2;
+    return Vec3<T>(v1.y * v2.z - v1.z * v2.y, 
+                   v1.z * v2.x - v1.x * v2.z, 
+                   v1.x * v2.y - v1.y * v2.x);
 }
 
 typedef Vec2<float> Vec2f;
