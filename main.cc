@@ -49,7 +49,7 @@ void line(Vec2i p0, Vec2i p1,
     }
 }
 
-Vec3f barycentric_coords(Vec2i A, Vec2i B, Vec2i C, Vec2i P) {
+Vec3f barycentric_coords(const Vec2i &A, const Vec2i &B, const Vec2i &C, const Vec2i &P) {
     Vec2i AB = B - A;
     Vec2i AC = C - A;
     Vec2i PA = A - P;
@@ -66,7 +66,7 @@ Vec3f barycentric_coords(Vec2i A, Vec2i B, Vec2i C, Vec2i P) {
                  coords.x / coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)   
 }
 
-void triangle(const Vec3i p0, const Vec3i p1, const Vec3i p2, 
+void triangle(const Vec3i &p0, const Vec3i &p1, const Vec3i &p2, 
               float z_buffer[WIDTH * HEIGHT], 
               TGAImage &image, const TGAColor &color) {
     const Vec2i bbox_min(std::max(0, std::min(std::min(p0.x, p1.x), p2.x)),
@@ -80,6 +80,7 @@ void triangle(const Vec3i p0, const Vec3i p1, const Vec3i p2,
     for (P.x = bbox_min.x; P.x <= bbox_max.x; ++P.x) {
         for (P.y = bbox_min.y; P.y <= bbox_max.y; ++P.y) {
             Vec3f bc_screen = barycentric_coords(p0.xy(), p1.xy(), p2.xy(), P);
+            
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
                 continue; // point lies outside the triangle
 

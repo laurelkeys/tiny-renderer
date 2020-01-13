@@ -71,7 +71,7 @@ template <class T> struct Vec3 {
         return *this;
     }
 
-    inline const Vec2<T> xy() const {
+    inline const Vec2<T> &xy() const {
         return *(Vec2<T> *) this;
     }
 };
