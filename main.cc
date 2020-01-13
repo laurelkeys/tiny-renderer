@@ -13,6 +13,7 @@ const TGAColor blue  = TGAColor(  0,   0, 255, 255);
 
 const int WIDTH  = 800;
 const int HEIGHT = 800;
+const int DEPTH  = 255;
 
 void line(Vec2i p0, Vec2i p1,
           TGAImage &image, const TGAColor &color) {
@@ -137,7 +138,7 @@ int main(int argc, char **argv) {
             world_coords[j] = model->vert(face[j]);
             screen_coords[j] = Vec3i((world_coords[j].x + 1) * WIDTH / 2, 
                                      (world_coords[j].y + 1) * HEIGHT / 2, 
-                                     world_coords[j].z);
+                                     (world_coords[j].z + 1) * DEPTH / 2);
         }
 
         Vec3f normal = cross(world_coords[2] - world_coords[0],
@@ -148,6 +149,15 @@ int main(int argc, char **argv) {
         if (intensity > 0) {
             triangle(screen_coords[0], screen_coords[1], screen_coords[2], z_buffer, 
                      image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+        }
+    }
+
+    // visualizing z-buffer values
+    const float *max = std::max_element(z_buffer, z_buffer + WIDTH * HEIGHT);
+    for (int x = 0; x < WIDTH; ++x) {
+        for (int y = 0; y < HEIGHT; ++y) {
+            float col = std::max(z_buffer[x + y * WIDTH], 0.0f);
+            image.set(x, y, TGAColor(col, col, col, 200));
         }
     }
 
