@@ -1,5 +1,6 @@
 #include <limits>
 #include <memory>
+#include <algorithm>
 
 #include "model.hh"
 #include "geometry.hh"
@@ -64,36 +65,59 @@ Vec3f barycentric_coords(Vec2i A, Vec2i B, Vec2i C, Vec2i P) {
                  coords.x / coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)   
 }
 
-void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
+void triangle(Vec3i p0, Vec3i p1, Vec3i p2, 
               TGAImage &image, const TGAColor &color) {
-    if (p0.y == p1.y && p0.y == p2.y)
-        return; // ignore degenerate triangles
+    Vec2f bbox_min(std::max(0, std::min(std::min(p0.x, p1.x), p2.x)),
+                   std::max(0, std::min(std::min(p0.y, p1.y), p2.y)));
+    Vec2f bbox_max(std::min(image.get_width() - 1, std::max(std::max(p0.x, p1.x), p2.x)),
+                   std::min(image.get_height() - 1, std::max(std::max(p0.y, p1.y), p2.y)));
+    Vec3i P;
+    for (P.x = bbox_min.x; P.x <= bbox_max.x; ++P.x) {
+        for (P.y = bbox_min.y; P.y <= bbox_max.y; ++P.y) {
+            Vec3f bc_screen = barycentric_coords(p0.xy(), p1.xy(), p2.xy(), P.xy());
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                continue; // point lies outside the triangle
 
-    // sort the vertices by their y-coordinates
-    if (p1.y < p0.y) std::swap(p0, p1);
-    if (p2.y < p0.y) std::swap(p0, p2);
-    if (p2.y < p1.y) std::swap(p1, p2);
-
-    // A.y = B.y + C.y
-    Vec2i A = p2 - p0;
-    Vec2i B = p1 - p0;
-    Vec2i C = p2 - p1;
-
-    for (int y = 0; y <= A.y; ++y) {
-        bool upper_side = (y > B.y) || (B.y == 0);
-
-        // lerp segments
-        int start = p0.x + A.x * (y / (float) A.y);
-        int end = upper_side ? p1.x + C.x * ((y - B.y) / (float) C.y)
-                             : p0.x + B.x * (y / (float) B.y);
-        if (start > end)
-            std::swap(start, end);
-
-        // obs.: we don't call line() to avoid its checks
-        for (int x = start; x <= end; ++x)
-            image.set(x, p0.y + y, color);
+            image.set(P.x, P.y, color);
+            // P.z = bc_screen * Vec3f(p0.z, p1.z, p2.z);
+            // if (zbuffer[int(P.x + P.y * WIDTH)] < P.z) {
+            //     zbuffer[int(P.x + P.y * WIDTH)] = P.z;
+            //     image.set(P.x, P.y, color);
+            // }
+        }
     }
 }
+
+// void triangle(Vec2i p0, Vec2i p1, Vec2i p2,
+//               TGAImage &image, const TGAColor &color) {
+//     if (p0.y == p1.y && p0.y == p2.y)
+//         return; // ignore degenerate triangles
+
+//     // sort the vertices by their y-coordinates
+//     if (p1.y < p0.y) std::swap(p0, p1);
+//     if (p2.y < p0.y) std::swap(p0, p2);
+//     if (p2.y < p1.y) std::swap(p1, p2);
+
+//     // A.y = B.y + C.y
+//     Vec2i A = p2 - p0;
+//     Vec2i B = p1 - p0;
+//     Vec2i C = p2 - p1;
+
+//     for (int y = 0; y <= A.y; ++y) {
+//         bool upper_side = (y > B.y) || (B.y == 0);
+
+//         // lerp segments
+//         int start = p0.x + A.x * (y / (float) A.y);
+//         int end = upper_side ? p1.x + C.x * ((y - B.y) / (float) C.y)
+//                              : p0.x + B.x * (y / (float) B.y);
+//         if (start > end)
+//             std::swap(start, end);
+
+//         // obs.: we don't call line() to avoid its checks
+//         for (int x = start; x <= end; ++x)
+//             image.set(x, p0.y + y, color);
+//     }
+// }
 
 int main(int argc, char **argv) {
     TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
@@ -106,11 +130,12 @@ int main(int argc, char **argv) {
         std::vector<int> face = model->face(i);
 
         Vec3f world_coords[3];
-        Vec2i screen_coords[3];
+        Vec3i screen_coords[3];
         for (int j = 0; j < 3; ++j) {
             world_coords[j] = model->vert(face[j]);
-            screen_coords[j] = Vec2i((world_coords[j].x + 1) * WIDTH / 2,
-                                     (world_coords[j].y + 1) * HEIGHT / 2);
+            screen_coords[j] = Vec3i((world_coords[j].x + 1) * WIDTH / 2, 
+                                     (world_coords[j].y + 1) * HEIGHT / 2, 
+                                     world_coords[j].z);
         }
 
         Vec3f normal = cross(world_coords[2] - world_coords[0],
