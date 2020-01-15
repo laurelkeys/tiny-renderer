@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2], z_buffer, 
+            triangle(screen_coords[0], screen_coords[1], screen_coords[2], z_buffer,
                      image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
         }
     }

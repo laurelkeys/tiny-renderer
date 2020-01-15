@@ -33,10 +33,17 @@ template <class T> struct Vec2 {
 template <class T> struct Vec3 {
     union {
         struct { T x, y, z; };
+        // struct {
+        //     union {
+        //         struct { T x, y; };
+        //         Vec2<T> xy;
+        //     };
+        //     T z;
+        // };
         struct { T ivert, iuv, inorm; };
         T raw[3];
     };
-    
+
     Vec3()
         : x(0)
         , y(0)
@@ -111,5 +118,10 @@ typedef Vec2<int> Vec2i;
 
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
+
+template <typename To, typename From>
+Vec3<To> cast_to_Vec3(const Vec3<From> &from) {
+    return Vec3<To>(from.x, from.y, from.z);
+}
 
 #endif //__GEOMETRY_HH__
