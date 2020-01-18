@@ -120,6 +120,11 @@ typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
 
 template <typename To, typename From>
+Vec2<To> cast_to_Vec2(const Vec2<From> &from) {
+    return Vec2<To>(from.x, from.y);
+}
+
+template <typename To, typename From>
 Vec3<To> cast_to_Vec3(const Vec3<From> &from) {
     return Vec3<To>(from.x, from.y, from.z);
 }

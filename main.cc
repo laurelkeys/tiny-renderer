@@ -6,6 +6,9 @@
 #include "geometry.hh"
 #include "tgaimage.hh"
 
+const int MAX_FLOAT = std::numeric_limits<float>::max();
+const int MIN_FLOAT = std::numeric_limits<float>::lowest(); // -MAX_FLOAT
+
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255,   0,   0, 255);
 const TGAColor green = TGAColor(  0, 255,   0, 255);
@@ -14,6 +17,8 @@ const TGAColor blue  = TGAColor(  0,   0, 255, 255);
 const int WIDTH  = 800;
 const int HEIGHT = 800;
 const int DEPTH  = 255;
+
+Model *model;
 
 void line(Vec2i p0, Vec2i p1,
           TGAImage &image, const TGAColor &color) {
@@ -24,10 +29,8 @@ void line(Vec2i p0, Vec2i p1,
         transposed = true;
     }
 
-    if (p0.x > p1.x) {
-        std::swap(p0.x, p1.x);
-        std::swap(p0.y, p1.y);
-    }
+    if (p0.x > p1.x)
+        std::swap(p0, p1);
 
     int dx = p1.x - p0.x;
     int dy = p1.y - p0.y;
@@ -66,20 +69,24 @@ Vec3f barycentric_coords(const Vec2i &A, const Vec2i &B, const Vec2i &C, const V
                  coords.x / coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)   
 }
 
-void triangle(const Vec3i &p0, const Vec3i &p1, const Vec3i &p2, 
-              float z_buffer[WIDTH * HEIGHT], 
-              TGAImage &image, const TGAColor &color) {
-    const Vec2i bbox_min(std::max(0, std::min(std::min(p0.x, p1.x), p2.x)),
-                         std::max(0, std::min(std::min(p0.y, p1.y), p2.y)));
-    const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(p0.x, p1.x), p2.x)),
-                         std::min(image.get_height() - 1, std::max(std::max(p0.y, p1.y), p2.y)));
+struct Vertex {
+    Vec3i pos;
+    Vec2i uv;
+};
+
+void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, 
+              float intensity, float z_buffer[WIDTH * HEIGHT], TGAImage &image) {
+    const Vec2i bbox_min(std::max(0, std::min(std::min(v0.pos.x, v1.pos.x), v2.pos.x)),
+                         std::max(0, std::min(std::min(v0.pos.y, v1.pos.y), v2.pos.y)));
+    const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(v0.pos.x, v1.pos.x), v2.pos.x)),
+                         std::min(image.get_height() - 1, std::max(std::max(v0.pos.y, v1.pos.y), v2.pos.y)));
     
-    const Vec3f vertex_heights(p0.z, p1.z, p2.z);
+    const Vec3f vertex_heights(v0.pos.z, v1.pos.z, v2.pos.z);
     
     Vec2i P;
     for (P.x = bbox_min.x; P.x <= bbox_max.x; ++P.x) {
         for (P.y = bbox_min.y; P.y <= bbox_max.y; ++P.y) {
-            Vec3f bc_screen = barycentric_coords(p0.xy(), p1.xy(), p2.xy(), P);
+            Vec3f bc_screen = barycentric_coords(v0.pos.xy(), v1.pos.xy(), v2.pos.xy(), P);
             
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
                 continue; // point lies outside the triangle
@@ -88,6 +95,8 @@ void triangle(const Vec3i &p0, const Vec3i &p1, const Vec3i &p2,
             float Pz = bc_screen * vertex_heights; // P's height (z) is a "weighted sum"
             if (z_buffer[int(P.x + P.y * WIDTH)] < Pz) {
                 z_buffer[int(P.x + P.y * WIDTH)] = Pz;
+                Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
+                TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
                 image.set(P.x, P.y, color);
             }
         }
@@ -95,14 +104,13 @@ void triangle(const Vec3i &p0, const Vec3i &p1, const Vec3i &p2,
 }
 
 int main(int argc, char **argv) {
-    TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
-    auto model = std::make_unique<Model>(argc >= 2 ? argv[1]
-                                                   : "obj/african_head/african_head.obj");
-
-    Vec3f light_direction(0.0, 0.0, -1.0);
+    model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
     float *z_buffer = new float[WIDTH * HEIGHT];
-    std::fill_n(z_buffer, WIDTH * HEIGHT, std::numeric_limits<float>::lowest());
+    std::fill_n(z_buffer, WIDTH * HEIGHT, MIN_FLOAT);
+
+    TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
+    Vec3f light_direction(0, 0, -1);
 
     for (int i = 0; i < model->nfaces(); ++i) {
         std::vector<int> face = model->face(i);
@@ -122,11 +130,17 @@ int main(int argc, char **argv) {
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {
-            triangle(screen_coords[0], screen_coords[1], screen_coords[2], z_buffer,
-                     image, TGAColor(intensity * 255, intensity * 255, intensity * 255, 255));
+            Vec2i uv[3] = { model->uv(i, 0), model->uv(i, 1), model->uv(i, 2) };
+            triangle({ screen_coords[0], uv[0] },
+                     { screen_coords[1], uv[1] },
+                     { screen_coords[2], uv[2] },
+                     intensity, z_buffer, image);
         }
     }
 
     image.flip_vertically(); // have the origin at the bottom-left corner
     image.write_tga_file("output.tga");
+
+    delete model;
+    delete[] z_buffer;
 }
