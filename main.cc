@@ -40,98 +40,48 @@ Vec3f barycentric_coords(const Vec2i &A, const Vec2i &B, const Vec2i &C, const V
                  coords.x / static_cast<float>(coords.z)); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
 }
 
-template <class T> struct Vertex {
-    Vec3<T> pos;
-    Vec2<T> uv;
+struct Vertex {
+    Vec3i pos;
+    Vec2i uv;
 
     Vertex()
         : pos()
         , uv() { }
 
-    Vertex(Vec3<T> pos_, Vec2<T> uv_)
+    Vertex(Vec3i pos_, Vec2i uv_)
         : pos(pos_)
         , uv(uv_) { }
 };
 
-void triangle(Vertex<int> v0, Vertex<int> v1, Vertex<int> v2, float intensity, 
-              int z_buffer[WIDTH * HEIGHT], TGAImage &image) {
-    if (v0.pos.y == v1.pos.y && v1.pos.y == v2.pos.y)
-        return; // ignore degenerate triangles
+void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, 
+              float intensity, int z_buffer[WIDTH * HEIGHT], TGAImage &image) {
+    const Vec2i bbox_min(std::max(0, std::min(std::min(v0.pos.x, v1.pos.x), v2.pos.x)),
+                         std::max(0, std::min(std::min(v0.pos.y, v1.pos.y), v2.pos.y)));
+    const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(v0.pos.x, v1.pos.x), v2.pos.x)),
+                         std::min(image.get_height() - 1, std::max(std::max(v0.pos.y, v1.pos.y), v2.pos.y)));
+    
+    const Vec3f vertex_heights(v0.pos.z, v1.pos.z, v2.pos.z);
+    
+    Vec2i P;
+    for (P.x = bbox_min.x; P.x <= bbox_max.x; ++P.x) {
+        for (P.y = bbox_min.y; P.y <= bbox_max.y; ++P.y) {
+            Vec3f bc_screen = barycentric_coords(v0.pos.xy(), v1.pos.xy(), v2.pos.xy(), P);
 
-    if (v1.pos.y < v0.pos.y) std::swap(v0, v1);
-    if (v2.pos.y < v0.pos.y) std::swap(v0, v2);
-    if (v2.pos.y < v1.pos.y) std::swap(v1, v2);
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                continue; // point lies outside the triangle
 
-    // A.y = B.y + C.y
-    Vec3f A = cast_to_Vec3<float>(v2.pos - v0.pos);
-    Vec3f B = cast_to_Vec3<float>(v1.pos - v0.pos);
-    Vec3f C = cast_to_Vec3<float>(v2.pos - v1.pos);
-    Vec2f uvA = cast_to_Vec2<float>(v2.uv - v0.uv);
-    Vec2f uvB = cast_to_Vec2<float>(v1.uv - v0.uv);
-    Vec2f uvC = cast_to_Vec2<float>(v2.uv - v1.uv);
-
-    for (int y = 0; y <= A.y; ++y) {
-        float t = y / A.y;
-        Vertex<float> start = Vertex<float>(cast_to_Vec3<float>(v0.pos) + A * t,
-                                            cast_to_Vec2<float>(v0.uv) + uvA * t);
-        Vertex<float> end = (y < B.y && B.y != 0)
-                                ? Vertex<float>(cast_to_Vec3<float>(v0.pos) + B * t,
-                                                cast_to_Vec2<float>(v0.uv) + uvB * t)
-                                : Vertex<float>(cast_to_Vec3<float>(v1.pos) + C * (t - B.y / A.y),
-                                                cast_to_Vec2<float>(v1.uv) + uvC * (t - B.y / A.y));
-        
-        if (start.pos.x > end.pos.x)
-            std::swap(start, end);
-        
-        // obs.: we don't call line() to avoid its checks
-        float dx = end.pos.x - start.pos.x;
-        for (int x = start.pos.x; x <= end.pos.x; ++x) {
-            t = dx == 0 ? 1 : (x - start.pos.x) / dx;
-            Vertex<float> P = Vertex<float>(start.pos + (end.pos - start.pos) * t,
-                                            start.uv + (end.uv - start.uv) * t);
-            int idx = P.pos.x + P.pos.y * WIDTH; // x + y * WIDTH;
-            if (z_buffer[idx] < P.pos.z) {
-                z_buffer[idx] = (int) P.pos.z;
-                TGAColor color = model->diffuse(cast_to_Vec2<int>(P.uv));
-                image.set(P.pos.x, P.pos.y, 
-                          TGAColor(color.bgra[2] * intensity, 
-                                   color.bgra[1] * intensity, 
-                                   color.bgra[0] * intensity));
+            // NOTE using P.z would implicitly cast from float to int since P is a Vec3i
+            float Pz = bc_screen * vertex_heights; // P's height (z) is a "weighted sum"
+            if (z_buffer[int(P.x + P.y * WIDTH)] < Pz) {
+                z_buffer[int(P.x + P.y * WIDTH)] = Pz;
+                // TGAColor color(intensity * 255);
+                Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
+                TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
+                image.set(P.x, P.y, color);
             }
         }
     }
 }
-
-
-// void triangle2(const Vertex &v0, const Vertex &v1, const Vertex &v2, 
-//               float intensity, int z_buffer[WIDTH * HEIGHT], TGAImage &image) {
-//     const Vec2i bbox_min(std::max(0, std::min(std::min(v0.pos.x, v1.pos.x), v2.pos.x)),
-//                          std::max(0, std::min(std::min(v0.pos.y, v1.pos.y), v2.pos.y)));
-//     const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(v0.pos.x, v1.pos.x), v2.pos.x)),
-//                          std::min(image.get_height() - 1, std::max(std::max(v0.pos.y, v1.pos.y), v2.pos.y)));
-    
-//     const Vec3f vertex_heights(v0.pos.z, v1.pos.z, v2.pos.z);
-    
-//     Vec2i P;
-//     for (P.x = bbox_min.x; P.x <= bbox_max.x; ++P.x) {
-//         for (P.y = bbox_min.y; P.y <= bbox_max.y; ++P.y) {
-//             Vec3f bc_screen = barycentric_coords(v0.pos.xy(), v1.pos.xy(), v2.pos.xy(), P);
-
-//             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
-//                 continue; // point lies outside the triangle
-
-//             // NOTE using P.z would implicitly cast from float to int since P is a Vec3i
-//             float Pz = bc_screen * vertex_heights; // P's height (z) is a "weighted sum"
-//             if (z_buffer[int(P.x + P.y * WIDTH)] < Pz) {
-//                 z_buffer[int(P.x + P.y * WIDTH)] = Pz;
-//                 // TGAColor color(intensity * 255);
-//                 Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
-//                 TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
-//                 image.set(P.x, P.y, color);
-//             }
-//         }
-//     }
-// }
 
 int main(int argc, char **argv) {
     model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
@@ -162,9 +112,9 @@ int main(int argc, char **argv) {
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {
-            triangle({ screen_coords[0], model->uv(i, 0) },
-                     { screen_coords[1], model->uv(i, 1) },
-                     { screen_coords[2], model->uv(i, 2) },
+            triangle(Vertex(screen_coords[0], model->uv(i, 0)),
+                     Vertex(screen_coords[1], model->uv(i, 1)),
+                     Vertex(screen_coords[2], model->uv(i, 2)),
                      intensity, z_buffer, image);
         }
     }
