@@ -6,9 +6,10 @@
 #include "geometry.hh"
 #include "tgaimage.hh"
 
-const float FLOAT_MAX = std::numeric_limits<float>::max();
-const float FLOAT_MIN = std::numeric_limits<float>::lowest(); // -FLOAT_MAX
-const float FLOAT_EPS = std::numeric_limits<float>::epsilon();
+const float MIN_INT = std::numeric_limits<int>::lowest();
+const float MAX_FLOAT = std::numeric_limits<float>::max();
+const float MIN_FLOAT = std::numeric_limits<float>::lowest(); // -MAX_FLOAT
+const float EPS_FLOAT = std::numeric_limits<float>::epsilon();
 
 const int WIDTH  = 800;
 const int HEIGHT = 800;
@@ -45,7 +46,7 @@ struct Vertex {
 };
 
 void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, 
-              float intensity, float z_buffer[WIDTH * HEIGHT], TGAImage &image) {
+              float intensity[3], int z_buffer[WIDTH * HEIGHT], TGAImage &image) {
     const Vec2i bbox_min(std::max(0, std::min(std::min(v0.pos.x, v1.pos.x), v2.pos.x)),
                          std::max(0, std::min(std::min(v0.pos.y, v1.pos.y), v2.pos.y)));
     const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(v0.pos.x, v1.pos.x), v2.pos.x)),
@@ -65,9 +66,11 @@ void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
             float Pz = bc_screen * vertex_heights; // P's height (z) is a "weighted sum"
             if (z_buffer[int(P.x + P.y * WIDTH)] < Pz) {
                 z_buffer[int(P.x + P.y * WIDTH)] = Pz;
-                // Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
+                Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
                 // TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
-                TGAColor color(Pz < 0 ? 0 : Pz > 255 ? 255 : static_cast<int>(Pz));
+                TGAColor color(255 * intensity[0], 
+                               255 * intensity[1], 
+                               255 * intensity[2]);
                 image.set(P.x, P.y, color);
             }
         }
@@ -77,8 +80,8 @@ void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
 int main(int argc, char **argv) {
     model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
-    float *z_buffer = new float[WIDTH * HEIGHT];
-    std::fill_n(z_buffer, WIDTH * HEIGHT, FLOAT_MIN);
+    int *z_buffer = new int[WIDTH * HEIGHT];
+    std::fill_n(z_buffer, WIDTH * HEIGHT, MIN_INT);
 
     TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
     Vec3f light_direction(0, 0, -1);
@@ -86,31 +89,39 @@ int main(int argc, char **argv) {
     for (int i = 0; i < model->nfaces(); ++i) {
         std::vector<int> face = model->face(i);
 
+        float intensity[3];
         Vec3f world_coords[3];
         Vec3i screen_coords[3];
         for (int j = 0; j < 3; ++j) {
+            intensity[j] = model->normal(i, j) * light_direction;
             world_coords[j] = model->vert(face[j]);
             screen_coords[j] = Vec3i((world_coords[j].x + 1) * WIDTH / 2, 
                                      (world_coords[j].y + 1) * HEIGHT / 2, 
                                      (world_coords[j].z + 1) * DEPTH / 2);
         }
 
-        Vec3f normal = cross(world_coords[2] - world_coords[0],
-                             world_coords[1] - world_coords[0]).normalize();
-        float intensity = light_direction * normal;
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)
-        if (intensity > 0) {
-            Vec2i uv[3] = { model->uv(i, 0), model->uv(i, 1), model->uv(i, 2) };
-            triangle({ screen_coords[0], uv[0] },
-                     { screen_coords[1], uv[1] },
-                     { screen_coords[2], uv[2] },
-                     intensity, z_buffer, image);
-        }
+        // if (intensity > 0) {
+        Vec2i uv[3] = { model->uv(i, 0), model->uv(i, 1), model->uv(i, 2) };
+        triangle({ screen_coords[0], uv[0] },
+                 { screen_coords[1], uv[1] },
+                 { screen_coords[2], uv[2] },
+                 intensity, z_buffer, image);
+        // }
     }
 
     image.flip_vertically(); // have the origin at the bottom-left corner
     image.write_tga_file("output.tga");
+
+    { // dump z-buffer (debugging purposes only)
+        TGAImage zbimage(WIDTH, HEIGHT, TGAImage::GRAYSCALE);
+        for (int i = 0; i < WIDTH; i++)
+            for (int j = 0; j < HEIGHT; j++)
+                zbimage.set(i, j, TGAColor(z_buffer[i + j * WIDTH]));
+        zbimage.flip_vertically();
+        zbimage.write_tga_file("zbuffer.tga");
+    }
 
     delete model;
     delete[] z_buffer;
