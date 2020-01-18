@@ -58,16 +58,16 @@ Model::Model(const char *filename)
 Model::~Model() { }
 
 int Model::nverts() {
-    return (int) verts_.size();
+    return static_cast<int>(verts_.size());
 }
 
 int Model::nfaces() {
-    return (int) faces_.size();
+    return static_cast<int>(faces_.size());
 }
 
 std::vector<int> Model::face(int idx) {
     std::vector<int> face;
-    for (int i = 0; i < (int) faces_[idx].size(); ++i)
+    for (int i = 0; i < static_cast<int>(faces_[idx].size()); ++i)
         face.push_back(faces_[idx][i].ivert);
     return face;
 }

@@ -8,17 +8,16 @@
 template <class T> struct Vec2 {
     union {
         struct { T x, y; };
-        struct { T u, v; };
         T raw[2];
     };
     
     Vec2()
-        : u(0)
-        , v(0) { }
+        : x(0)
+        , y(0) { }
     
     Vec2(T _x, T _y)
-        : u(_x)
-        , v(_y) { }
+        : x(_x)
+        , y(_y) { }
     
     template <class> friend std::ostream &operator<<(std::ostream &s, Vec2<T> &v);
     

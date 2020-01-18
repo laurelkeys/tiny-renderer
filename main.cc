@@ -29,14 +29,14 @@ Vec3f barycentric_coords(const Vec2i &A, const Vec2i &B, const Vec2i &C, const V
                          Vec3i(AC.y, AB.y, PA.y));
 
     if (coords.z == 0) {
-        // the triangle is degenerate, so we return a 
-        // negative coordinate for it to be skipped
+        // the triangle is degenerate, so we return a negative coordinate
+        // for it to be skipped (as it means P lies outside triangle ABC)
         return Vec3f(-1, 1, 1);
     }
 
-    return Vec3f(1.0f - (coords.x + coords.y) / (float) coords.z, // 1 - u - v
-                 coords.y / (float) coords.z,  // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
-                 coords.x / (float) coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
+    return Vec3f(1.0f - (coords.x + coords.y) / static_cast<float>(coords.z), // 1 - u - v
+                 coords.y / static_cast<float>(coords.z),  // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
+                 coords.x / static_cast<float>(coords.z)); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
 }
 
 struct Vertex {
@@ -67,7 +67,7 @@ void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
                 z_buffer[int(P.x + P.y * WIDTH)] = Pz;
                 // Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
                 // TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
-                TGAColor color(Pz < 0 ? 0 : Pz > 255 ? 255 : (int) Pz);
+                TGAColor color(Pz < 0 ? 0 : Pz > 255 ? 255 : static_cast<int>(Pz));
                 image.set(P.x, P.y, color);
             }
         }
