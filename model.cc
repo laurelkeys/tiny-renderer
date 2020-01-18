@@ -4,7 +4,8 @@ Model::Model(const char *filename)
     : verts_()
     , faces_()
     , norms_()
-    , uv_() {
+    , uv_()
+    , diffuse_map_() {
     std::ifstream in;
     in.open(filename, std::ifstream::in);
     if (in.fail())
@@ -27,7 +28,7 @@ Model::Model(const char *filename)
             for (int i = 0; i < 3; ++i)
                 iss >> n.raw[i];
             norms_.push_back(n);
-        } else if (!line.compare(0, 2, "vt ")) {
+        } else if (!line.compare(0, 3, "vt ")) {
             iss >> trash >> trash;
             Vec2f uv;
             for (int i = 0; i < 2; ++i)
@@ -93,6 +94,11 @@ TGAColor Model::diffuse(Vec2i uv) {
 
 Vec2i Model::uv(int iface, int nvert) {
     int idx = faces_[iface][nvert].iuv;
-    return Vec2i(uv_[idx].x * diffuse_map_.get_width(), 
+    return Vec2i(uv_[idx].x * diffuse_map_.get_width(),
                  uv_[idx].y * diffuse_map_.get_height());
+}
+
+Vec3f Model::normal(int iface, int nvert) {
+    int idx = faces_[iface][nvert].inorm;
+    return norms_[idx].normalize();
 }

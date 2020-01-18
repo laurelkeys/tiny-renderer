@@ -6,8 +6,9 @@
 #include "geometry.hh"
 #include "tgaimage.hh"
 
-const int MAX_FLOAT = std::numeric_limits<float>::max();
-const int MIN_FLOAT = std::numeric_limits<float>::lowest(); // -MAX_FLOAT
+const float FLOAT_MAX = std::numeric_limits<float>::max();
+const float FLOAT_MIN = std::numeric_limits<float>::lowest(); // -FLOAT_MAX
+const float FLOAT_EPS = std::numeric_limits<float>::epsilon();
 
 const TGAColor white = TGAColor(255, 255, 255, 255);
 const TGAColor red   = TGAColor(255,   0,   0, 255);
@@ -61,12 +62,18 @@ Vec3f barycentric_coords(const Vec2i &A, const Vec2i &B, const Vec2i &C, const V
     //   P = (1-u-v) * A + u * B + v * C = A + u * AB + v * AC,
     // P is inside the triangle iff:
     //   (0 <= u, v <= 1) and (u + v <= 1)
-    Vec3f coords = cross(Vec3f(AC.x, AB.x, PA.x),
-                         Vec3f(AC.y, AB.y, PA.y));
+    Vec3i coords = cross(Vec3i(AC.x, AB.x, PA.x),
+                         Vec3i(AC.y, AB.y, PA.y));
 
-    return Vec3f(1.0f - (coords.x + coords.y) / coords.z, // 1 - u - v
-                 coords.y / coords.z,  // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
-                 coords.x / coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)   
+    if (coords.z == 0) {
+        // the triangle is degenerate, so we return a 
+        // negative coordinate for it to be skipped
+        return Vec3f(-1, 1, 1);
+    }
+
+    return Vec3f(1.0f - (coords.x + coords.y) / (float) coords.z, // 1 - u - v
+                 coords.y / (float) coords.z,  // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
+                 coords.x / (float) coords.z); // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
 }
 
 struct Vertex {
@@ -87,7 +94,7 @@ void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
     for (P.x = bbox_min.x; P.x <= bbox_max.x; ++P.x) {
         for (P.y = bbox_min.y; P.y <= bbox_max.y; ++P.y) {
             Vec3f bc_screen = barycentric_coords(v0.pos.xy(), v1.pos.xy(), v2.pos.xy(), P);
-            
+
             if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
                 continue; // point lies outside the triangle
 
@@ -95,8 +102,9 @@ void triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2,
             float Pz = bc_screen * vertex_heights; // P's height (z) is a "weighted sum"
             if (z_buffer[int(P.x + P.y * WIDTH)] < Pz) {
                 z_buffer[int(P.x + P.y * WIDTH)] = Pz;
-                Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
-                TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
+                // Vec3f bc = barycentric_coords(v0.uv, v1.uv, v2.uv, P);
+                // TGAColor color = model->diffuse(Vec2i(bc.x, bc.y));
+                TGAColor color(Pz < 0 ? 0 : Pz > 255 ? 255 : (int) Pz);
                 image.set(P.x, P.y, color);
             }
         }
@@ -107,7 +115,7 @@ int main(int argc, char **argv) {
     model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
     float *z_buffer = new float[WIDTH * HEIGHT];
-    std::fill_n(z_buffer, WIDTH * HEIGHT, MIN_FLOAT);
+    std::fill_n(z_buffer, WIDTH * HEIGHT, FLOAT_MIN);
 
     TGAImage image(WIDTH, HEIGHT, TGAImage::RGB);
     Vec3f light_direction(0, 0, -1);

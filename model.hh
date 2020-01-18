@@ -34,7 +34,7 @@ class Model {
         Vec3f vert(int i);
         // Vec3f vert(int iface, int nvert);
 
-        // Vec3f normal(int iface, int nvert);
+        Vec3f normal(int iface, int nvert);
         // Vec3f normal(Vec2f uv);
         
         Vec2i uv(int iface, int nvert);

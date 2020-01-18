@@ -33,14 +33,7 @@ template <class T> struct Vec2 {
 template <class T> struct Vec3 {
     union {
         struct { T x, y, z; };
-        // struct {
-        //     union {
-        //         struct { T x, y; };
-        //         Vec2<T> xy;
-        //     };
-        //     T z;
-        // };
-        struct { T ivert, iuv, inorm; };
+        struct { T ivert, iuv, inorm; }; // { vertex, uv, normal }
         T raw[3];
     };
 
