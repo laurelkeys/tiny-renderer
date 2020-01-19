@@ -1,6 +1,7 @@
 #ifndef __GEOMETRY_HH__
 #define __GEOMETRY_HH__
 
+#include <cassert>
 #include <cmath>
 
 /////////////////////////////////////////
@@ -19,12 +20,24 @@ template <class T> struct Vec2 {
         : x(_x)
         , y(_y) { }
     
-    template <class> friend std::ostream &operator<<(std::ostream &s, Vec2<T> &v);
+    template <typename OtherT> explicit Vec2(const Vec2<OtherT> &other) {
+        x = static_cast<T>(other.x);
+        y = static_cast<T>(other.y);
+    }
+    
+    template <class> friend std::ostream &operator<<(std::ostream &out, Vec2<T> &v);
+
+    T &operator[](const unsigned int i) { assert(i < 2); return raw[i]; }
+    const T &operator[](const unsigned int i) const { assert(i < 2); return raw[i]; }
     
     inline Vec2<T> operator+(const Vec2<T> &v) const { return Vec2<T>(x + v.x, y + v.y); }
     inline Vec2<T> operator-(const Vec2<T> &v) const { return Vec2<T>(x - v.x, y - v.y); }
     
     inline Vec2<T> operator*(float f) const { return Vec2<T>(x * f, y * f); }
+    
+    inline Vec2<T> operator*(const Vec2<T> &v) const {
+        return Vec2(x * v.x, y * v.y); // elementwise multiplication
+    }
 };
 
 /////////////////////////////////////////
@@ -32,7 +45,7 @@ template <class T> struct Vec2 {
 template <class T> struct Vec3 {
     union {
         struct { T x, y, z; };
-        struct { T ivert, iuv, inorm; }; // { vertex, uv, normal }
+        struct { T ivertex, iuv, inormal; }; // { v, vt, vn }
         T raw[3];
     };
 
@@ -45,16 +58,25 @@ template <class T> struct Vec3 {
         : x(_x)
         , y(_y)
         , z(_z) { }
+    
+    template <typename OtherT> explicit Vec3(const Vec3<OtherT> &other) {
+        x = static_cast<T>(other.x);
+        y = static_cast<T>(other.y);
+        z = static_cast<T>(other.z);
+    }
 
-    template <class> friend std::ostream &operator<<(std::ostream &s, Vec3<T> &v);
+    template <class> friend std::ostream &operator<<(std::ostream &out, Vec3<T> &v);
+    
+    T &operator[](const unsigned int i) { assert(i < 3); return raw[i]; }
+    const T &operator[](const unsigned int i) const { assert(i < 3); return raw[i]; }
     
     inline Vec3<T> operator+(const Vec3<T> &v) const { return Vec3<T>(x + v.x, y + v.y, z + v.z); }
     inline Vec3<T> operator-(const Vec3<T> &v) const { return Vec3<T>(x - v.x, y - v.y, z - v.z); }
     
     inline Vec3<T> operator*(float f) const { return Vec3<T>(x * f, y * f, z * f); }
 
-    inline T operator*(const Vec3<T> &v) const {
-        return x * v.x + y * v.y + z * v.z; // dot product
+    inline Vec3<T> operator*(const Vec3<T> &v) const {
+        return Vec3(x * v.x, y * v.y, z * v.z); // elementwise multiplication
     }
 
     float length() const {
@@ -77,12 +99,12 @@ template <class T> struct Vec3 {
 
 /////////////////////////////////////////
 
-template <class T> std::ostream &operator<<(std::ostream &s, Vec2<T> &v) {
+template <class T> std::ostream &operator<<(std::ostream &out, Vec2<T> &v) {
     s << "(" << v.x << ", " << v.y << ")";
     return s;
 }
 
-template <class T> std::ostream &operator<<(std::ostream &s, Vec3<T> &v) {
+template <class T> std::ostream &operator<<(std::ostream &out, Vec3<T> &v) {
     s << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return s;
 }
@@ -110,15 +132,5 @@ typedef Vec2<int> Vec2i;
 
 typedef Vec3<float> Vec3f;
 typedef Vec3<int> Vec3i;
-
-template <typename To, typename From>
-Vec2<To> cast_to_Vec2(const Vec2<From> &from) {
-    return Vec2<To>(from.x, from.y);
-}
-
-template <typename To, typename From>
-Vec3<To> cast_to_Vec3(const Vec3<From> &from) {
-    return Vec3<To>(from.x, from.y, from.z);
-}
 
 #endif //__GEOMETRY_HH__

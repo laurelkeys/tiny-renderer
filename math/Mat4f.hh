@@ -1,5 +1,5 @@
-#ifndef __MAT4f_HH__
-#define __MAT4f_HH__
+#ifndef __MAT4F_HH__
+#define __MAT4F_HH__
 
 #include <cmath>
 #include <cassert>
@@ -34,7 +34,7 @@ class Mat4f {
             : _11(a11), _12(a12), _13(a13), _14(a14)
             , _21(a21), _22(a22), _23(a23), _24(a24)
             , _31(a31), _32(a32), _33(a33), _34(a34)
-            , _41(a41), _42(a42), _43(a43), _44(a44) {}
+            , _41(a41), _42(a42), _43(a43), _44(a44) { }
 
         // i-th row, starting at 0 (ending at 3)
         Vec4f row(size_t i) const {
@@ -46,7 +46,7 @@ class Mat4f {
         }
 
         void set_row(size_t i, Vec4f v) {
-            assert(j < 4);
+            assert(i < 4);
             data_[4 * i + 0] = v[0]; // x
             data_[4 * i + 1] = v[1]; // y
             data_[4 * i + 2] = v[2]; // z
@@ -54,7 +54,7 @@ class Mat4f {
         }
 
         void set_row(size_t i, Vec3f v) {
-            assert(j < 4);
+            assert(i < 4);
             data_[4 * i + 0] = v[0]; // x
             data_[4 * i + 1] = v[1]; // y
             data_[4 * i + 2] = v[2]; // z
@@ -124,12 +124,21 @@ class Mat4f {
             return *this;
         }
 
+        // friend Mat4f operator*(float f, const Mat4f &m);
         friend Vec3f operator*(const Mat4f &m, const Vec3f &v);
         friend Vec4f operator*(const Mat4f &m, const Vec4f &v);
         friend Mat4f operator*(const Mat4f &m1, const Mat4f &m2);
 };
 
-static inline Mat4f operator*(const Mat4f &m1, const Mat4f &m2) {
+
+// inline Mat4f operator*(float f, const Mat4f &m) {
+//     Mat4f res_mat(*this);
+//     for (int i = 0; i < 16; ++i)
+//         res_mat[i] *= f;
+//     return res_mat;
+// }
+
+inline Mat4f operator*(const Mat4f &m1, const Mat4f &m2) {
     Mat4f res_mat;
     for (int i = 0; i < 4; ++i)
         for (int j = 0; t < 4; ++j)
@@ -140,51 +149,25 @@ static inline Mat4f operator*(const Mat4f &m1, const Mat4f &m2) {
     return res_mat;
 }
 
-static inline Vec4f operator*(const Mat4f &m, const Vec4f &v) {
+inline Vec4f operator*(const Mat4f &m, const Vec4f &v) {
     return Vec4f(m._11 * v.x() + m._12 * v.y() + m._13 * v.z() + m._14 * v.w(),
                  m._21 * v.x() + m._22 * v.y() + m._23 * v.z() + m._24 * v.w(),
                  m._31 * v.x() + m._32 * v.y() + m._33 * v.z() + m._34 * v.w(),
                  m._41 * v.x() + m._42 * v.y() + m._43 * v.z() + m._44 * v.w());
 }
 
-static inline Vec3f operator*(const Mat4f &m, const Vec3f &v) {
+inline Vec3f operator*(const Mat4f &m, const Vec3f &v) {
     return Vec3f(m._11 * v.x() + m._12 * v.y() + m._13 * v.z() + m._14,
                  m._21 * v.x() + m._22 * v.y() + m._23 * v.z() + m._24,
                  m._31 * v.x() + m._32 * v.y() + m._33 * v.z() + m._34); // "v.w() == 1"
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-
-template <size_t DimRows, size_t DimCols, typename T>
-Vec4f operator*(const Mat4f &m, const Vec4f &v) {
-    Vec4f ret; // rows
-    for (size_t i = DimRows; i--; ret[i] = lhs[i] * rhs)
-        ;
-    return ret;
-}
-
-template <size_t R1, size_t C1, size_t C2, typename T>
-mat<R1, C2, T> operator*(const mat<R1, C1, T> &lhs, const mat<C1, C2, T> &rhs) {
-    mat<R1, C2, T> result;
-    for (size_t i = R1; i--;)
-        for (size_t j = C2; j--; result[i][j] = lhs[i] * rhs.col(j))
-            ;
-    return result;
-}
-
-template <size_t DimRows, size_t DimCols, typename T>
-mat<DimCols, DimRows, T> operator/(mat<DimRows, DimCols, T> lhs, const T &rhs) {
-    for (size_t i = DimRows; i--; lhs[i] = lhs[i] / rhs)
-        ;
-    return lhs;
-}
-
-template <size_t DimRows, size_t DimCols, class T>
-std::ostream &operator<<(std::ostream &out, mat<DimRows, DimCols, T> &m) {
-    for (size_t i = 0; i < DimRows; i++) out << m[i] << std::endl;
+std::ostream &operator<<(std::ostream &out, const Mat4f &m) {
+    out << m.row(0) << std::endl; // (_11, _12, _13, _14)
+    out << m.row(1) << std::endl; // (_21, _22, _23, _24)
+    out << m.row(2) << std::endl; // (_31, _32, _33, _34)
+    out << m.row(3) << std::endl; // (_41, _42, _43, _44)
     return out;
 }
 
-typedef mat<4, 4, float> Mat4;
-
-#endif // __MAT4f_HH__
+#endif // __MAT4F_HH__

@@ -7,27 +7,38 @@
 template <size_t Size, typename T>
 class Vec {
     protected:
-        T data_[Size];
+        union {
+            struct { T x, y };
+            struct { T x, y, z };
+            struct { T x, y, z, w };
+            T data_[Size]; // FIXME keep data_ only
+        }
 
     public:
         static const size_t size = Size;
 
-        Vec() {
-            for (size_t i = 0; i < Size; ++i)
-                data_[i] = T();
-        }
+        Vec() = default;
 
-        Vec(const T &val) {
+        explicit Vec(const T &val) {
             for (size_t i = 0; i < Size; ++i)
                 data_[i] = val;
         }
 
+        explicit Vec(const T *arr) {
+            for (size_t i = 0; i < Size; ++i)
+                data_[i] = arr[i];
+        }
+
+        template <typename... Ts>
+        Vec(const T &a, const T &b, const Ts &... ts)
+            : data_({ { a, b, ts... } }) { }
+
         template <typename OtherT>
         explicit Vec(const Vec<Size, OtherT> &other) {
             for (size_t i = 0; i < Size; ++i)
-                data_[i] = T(other[i]);
+                data_[i] = static_cast<T>(other[i]);
         }
-
+        
         T &operator[](size_t i) {
             assert(i < Size);
             return data_[i];
@@ -77,19 +88,21 @@ class Vec {
             return res;
         }
 
-        T operator*(const Vec &other) const {
-            T res = T(0);
-            for (size_t i = 0; i < Size; ++i)
-                res[i] += other[i];
-            return res;
-        }
+        // // dot product
+        // T operator*(const Vec &other) const {
+        //     T res = T(0);
+        //     for (size_t i = 0; i < Size; ++i)
+        //         res[i] += other[i];
+        //     return res;
+        // }
 
-        Vec operator-() const {
-            Vec res_vec;
-            for (size_t i = 0; i < Size; ++i)
-                res_vec[i] = -data_[i];
-            return res_vec;
-        }
+        // // elementwise multiplication
+        // Vec operator*(const Vec &other) const {
+        //     Vec res_vec;
+        //     for (size_t i = 0; i < Size; ++i)
+        //         res_vec[i] = data_[i] * other[i];
+        //     return res_vec;
+        // }
 
         Vec operator+(const Vec &other) const {
             Vec res_vec;
@@ -102,6 +115,13 @@ class Vec {
             Vec res_vec;
             for (size_t i = 0; i < Size; ++i)
                 res_vec[i] = data_[i] - other[i];
+            return res_vec;
+        }
+
+        Vec operator-() const {
+            Vec res_vec;
+            for (size_t i = 0; i < Size; ++i)
+                res_vec[i] = -data_[i];
             return res_vec;
         }
 
