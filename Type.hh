@@ -13,7 +13,7 @@ namespace Type {
     struct Vec2 {
         /// properties ////////////////////////////////////////
         T x, y;
-        const static size_t size = 2;
+        const static unsigned int size = 2;
 
         /// constructors //////////////////////////////////////
         Vec2()
@@ -34,12 +34,12 @@ namespace Type {
             , y(T(v.y)) { }
 
         /// indexing //////////////////////////////////////////
-        T &operator[](size_t i) {
+        T &operator[](unsigned int i) {
             assert(i < size);
             return (&x)[i]; // type punning
         }
 
-        const T &operator[](size_t i) const {
+        const T &operator[](unsigned int i) const {
             assert(i < size);
             return (&x)[i]; // type punning
         }
@@ -71,6 +71,10 @@ namespace Type {
 
         bool operator==(const Vec2 &v) const {
             return v.x == x && v.y == y;
+        }
+
+        bool operator!=(const Vec2 &v) const {
+            return v.x != x || v.y != y;
         }
 
         /// arithmetic (vector x scalar) //////////////////////
@@ -118,6 +122,11 @@ namespace Type {
             y *= inv_length;
             return *this;
         }
+
+        friend std::ostream &operator<<(std::ostream &out, Vec2 &v) {
+            out << "(" << x << ", " << y << ")";
+            return out;
+        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
@@ -139,7 +148,7 @@ namespace Type {
     struct Vec3 {
         /// properties ////////////////////////////////////////
         T x, y, z;
-        const static size_t size = 3;
+        const static unsigned int size = 3;
 
         /// constructors //////////////////////////////////////
         Vec3()
@@ -164,12 +173,12 @@ namespace Type {
             , z(T(v.z)) { }
 
         /// indexing //////////////////////////////////////////
-        T &operator[](size_t i) {
+        T &operator[](unsigned int i) {
             assert(i < size);
             return (&x)[i]; // type punning
         }
 
-        const T &operator[](size_t i) const {
+        const T &operator[](unsigned int i) const {
             assert(i < size);
             return (&x)[i]; // type punning
         }
@@ -203,6 +212,10 @@ namespace Type {
 
         bool operator==(const Vec3 &v) const {
             return v.x == x && v.y == y && v.z == z;
+        }
+
+        bool operator!=(const Vec3 &v) const {
+            return v.x != x || v.y != y || v.z != z;
         }
 
         /// arithmetic (vector x scalar) //////////////////////
@@ -253,6 +266,11 @@ namespace Type {
             z *= inv_length;
             return *this;
         }
+
+        friend std::ostream &operator<<(std::ostream &out, Vec3 &v) {
+            out << "(" << x << ", " << y << ", " << z << ")";
+            return out;
+        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
@@ -283,7 +301,7 @@ namespace Type {
     struct Vec4 {
         /// properties ////////////////////////////////////////
         T x, y, z, w;
-        const static size_t size = 4;
+        const static unsigned int size = 4;
 
         /// constructors //////////////////////////////////////
         Vec4()
@@ -312,12 +330,12 @@ namespace Type {
             , w(T(v.w)) { }
 
         /// indexing //////////////////////////////////////////
-        T &operator[](size_t i) {
+        T &operator[](unsigned int i) {
             assert(i < size);
             return (&x)[i]; // type punning
         }
 
-        const T &operator[](size_t i) const {
+        const T &operator[](unsigned int i) const {
             assert(i < size);
             return (&x)[i]; // type punning
         }
@@ -353,6 +371,10 @@ namespace Type {
 
         bool operator==(const Vec4 &v) const {
             return v.x == x && v.y == y && v.z == z && v.w == w;
+        }
+
+        bool operator!=(const Vec4 &v) const {
+            return v.x != x || v.y != y || v.z != z || v.w != w;
         }
 
         /// arithmetic (vector x scalar) //////////////////////
@@ -416,6 +438,11 @@ namespace Type {
             w = T(1); // w *= inv_w;
             return *this;
         }
+
+        friend std::ostream &operator<<(std::ostream &out, Vec3 &v) {
+            out << "(" << x << ", " << y << ", " << z << ", " << w << ")";
+            return out;
+        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
@@ -429,6 +456,21 @@ namespace Type {
     inline T dot(const Vec4<T> &v1, const Vec4<T> &v2) {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
     }
+
+    ///////////////////////////////////////////////////////
+    /// typedefs //////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    typedef Vec4<int> Vec4i;
+    typedef Vec3<int> Vec3i;
+    typedef Vec2<int> Vec2i;
+
+    typedef Vec4<float> Vec4f;
+    typedef Vec3<float> Vec3f;
+    typedef Vec2<float> Vec2f;
+
+    typedef Vec4<unsigned int> Vec4u;
+    typedef Vec3<unsigned int> Vec3u;
+    typedef Vec2<unsigned int> Vec2u;
 }
 
 #endif // __TYPE_HH__
