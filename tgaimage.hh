@@ -1,5 +1,5 @@
-#ifndef __TGA_IMAGE__
-#define __TGA_IMAGE__
+#ifndef __TGA_IMAGE_HH__
+#define __TGA_IMAGE_HH__
 
 #include <fstream>
 
@@ -104,4 +104,4 @@ class TGAImage {
     void clear();
 };
 
-#endif // __TGA_IMAGE__
+#endif // __TGA_IMAGE_HH__
