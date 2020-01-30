@@ -16,7 +16,7 @@ namespace Type {
         /// properties ////////////////////////////////////////
 
         T x, y;
-        const static unsigned int size = 2;
+        static const unsigned int size = 2;
 
         /// constructors //////////////////////////////////////
 
@@ -163,7 +163,7 @@ namespace Type {
         /// properties ////////////////////////////////////////
 
         T x, y, z;
-        const static unsigned int size = 3;
+        static const unsigned int size = 3;
 
         /// constructors //////////////////////////////////////
 
@@ -328,7 +328,7 @@ namespace Type {
         /// properties ////////////////////////////////////////
 
         T x, y, z, w;
-        const static unsigned int size = 4;
+        static const unsigned int size = 4;
 
         /// constructors //////////////////////////////////////
 
@@ -600,7 +600,6 @@ namespace Type {
             _m[4 * i + 2] = v.z;
             _m[4 * i + 3] = v.w;
         }
-
         void set_row(unsigned int i, const Vec3f &v) {
             assert(i < 4);
             _m[4 * i + 0] = v.x;
@@ -626,7 +625,6 @@ namespace Type {
             _m[4 * 2 + j] = v.z;
             _m[4 * 3 + j] = v.w;
         }
-
         void set_col(unsigned int j, const Vec3f &v) {
             assert(j < 4);
             _m[4 * 0 + j] = v.x;
@@ -645,6 +643,12 @@ namespace Type {
             );
         }
 
+        Mat4f &operator*=(float a) {
+            for (int i = 0; i < 4; ++i)
+                for (int j = 0; j < 4; ++j)
+                    _m[4 * i + j] = a;
+        }
+
         /// arithmetic (matrix x vector) //////////////////////
 
         Vec4f operator*(const Vec4f &v) const {
@@ -655,8 +659,29 @@ namespace Type {
                 _41 * v.x + _42 * v.y + _43 * v.z + _44 * v.w
             );
         }
+        Vec3f operator*(const Vec3f &v) const {
+            // "v.w == 1"
+            return Vec3f(
+                _11 * v.x + _12 * v.y + _13 * v.z + _14,
+                _21 * v.x + _22 * v.y + _23 * v.z + _24,
+                _31 * v.x + _32 * v.y + _33 * v.z + _34
+            );
+        }
 
         /// arithmetic (matrix x matrix) //////////////////////
+
+        Mat4f operator*(const Mat4f &m) const {
+            Mat4f result;
+            for (int i = 0; i < 4; ++i)
+                for (int j = 0; j < 4; ++j)
+                    result._m[4 * i + j] = (
+                        _m[4 * i + 0] * m._m[4 * 0 + j] + 
+                        _m[4 * i + 1] * m._m[4 * 1 + j] + 
+                        _m[4 * i + 2] * m._m[4 * 2 + j] + 
+                        _m[4 * i + 3] * m._m[4 * 3 + j]
+                    );
+            return result;
+        }
 
         bool operator==(const Mat4f &m) const {
             for (int i = 0; i < 4; ++i)
@@ -672,6 +697,26 @@ namespace Type {
                     if (m._m[4 * i + j] != _m[4 * i + j])
                         return true;
             return false;
+        }
+
+        /// constants /////////////////////////////////////////
+
+        static const Mat4f identity() {
+            return Mat4f(
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            );
+        }
+
+        static const Mat4f zero() {
+            return Mat4f(
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            );
         }
 
         /// misc //////////////////////////////////////////////
@@ -691,24 +736,6 @@ namespace Type {
                 _12, _22, _32, _42,
                 _13, _23, _33, _43,
                 _14, _24, _34, _44
-            );
-        }
-
-        static Mat4f identity() {
-            return Mat4f(
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
-            );
-        }
-
-        static Mat4f zero() {
-            return Mat4f(
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0
             );
         }
 
