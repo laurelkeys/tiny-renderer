@@ -10,6 +10,7 @@ namespace Type {
     ///////////////////////////////////////////////////////
     /// Vec2 //////////////////////////////////////////////
     ///////////////////////////////////////////////////////
+
     template <typename T>
     struct Vec2 {
         /// properties ////////////////////////////////////////
@@ -129,11 +130,6 @@ namespace Type {
             y *= inv_length;
             return *this;
         }
-
-        friend std::ostream &operator<<(std::ostream &out, const Vec2 &v) {
-            out << "(" << x << ", " << y << ")";
-            return out;
-        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
@@ -150,9 +146,18 @@ namespace Type {
         return v1.x * v2.x + v1.y * v2.y;
     }
 
+    /// misc //////////////////////////////////////////////
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &out, const Vec2<T> &v) {
+        out << "(" << x << ", " << y << ")";
+        return out;
+    }
+
     ///////////////////////////////////////////////////////
     /// Vec3 //////////////////////////////////////////////
     ///////////////////////////////////////////////////////
+
     template <typename T>
     struct Vec3 {
         /// properties ////////////////////////////////////////
@@ -281,11 +286,6 @@ namespace Type {
             z *= inv_length;
             return *this;
         }
-
-        friend std::ostream &operator<<(std::ostream &out, const Vec3 &v) {
-            out << "(" << x << ", " << y << ", " << z << ")";
-            return out;
-        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
@@ -311,9 +311,18 @@ namespace Type {
         );
     }
 
+    /// misc //////////////////////////////////////////////
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &out, const Vec3<T> &v) {
+        out << "(" << x << ", " << y << ", " << z << ")";
+        return out;
+    }
+
     ///////////////////////////////////////////////////////
     /// Vec4 //////////////////////////////////////////////
     ///////////////////////////////////////////////////////
+
     template <typename T>
     struct Vec4 {
         /// properties ////////////////////////////////////////
@@ -461,11 +470,6 @@ namespace Type {
             w = T(1); // w *= inv_w;
             return *this;
         }
-
-        friend std::ostream &operator<<(std::ostream &out, const Vec3 &v) {
-            out << "(" << x << ", " << y << ", " << z << ", " << w << ")";
-            return out;
-        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
@@ -482,25 +486,57 @@ namespace Type {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
     }
 
+    /// misc //////////////////////////////////////////////
+
+    template <typename T>
+    std::ostream &operator<<(std::ostream &out, const Vec4<T> &v) {
+        out << "(" << x << ", " << y << ", " << z << ", " << w << ")";
+        return out;
+    }
+
+    ///////////////////////////////////////////////////////
+    /// template specialization ///////////////////////////
+    ///////////////////////////////////////////////////////
+
+    template <>
+    template <>
+    Vec2<int>::Vec2(const Vec2<float> &v)
+        : x(int(v.x + .5f))
+        , y(int(v.y + .5f)) { }
+    template <>
+    template <>
+    Vec3<int>::Vec3(const Vec3<float> &v)
+        : x(int(v.x + .5f))
+        , y(int(v.y + .5f))
+        , z(int(v.z + .5f)) { }
+    template <>
+    template <>
+    Vec4<int>::Vec4(const Vec4<float> &v)
+        : x(int(v.x + .5f))
+        , y(int(v.y + .5f))
+        , z(int(v.z + .5f))
+        , w(int(v.w + .5f)) { }
+
     ///////////////////////////////////////////////////////
     /// typedefs //////////////////////////////////////////
     ///////////////////////////////////////////////////////
 
-    typedef Vec4<int> Vec4i;
-    typedef Vec3<int> Vec3i;
     typedef Vec2<int> Vec2i;
+    typedef Vec3<int> Vec3i;
+    typedef Vec4<int> Vec4i;
 
-    typedef Vec4<float> Vec4f;
-    typedef Vec3<float> Vec3f;
     typedef Vec2<float> Vec2f;
+    typedef Vec3<float> Vec3f;
+    typedef Vec4<float> Vec4f;
 
-    typedef Vec4<unsigned int> Vec4u;
-    typedef Vec3<unsigned int> Vec3u;
     typedef Vec2<unsigned int> Vec2u;
+    typedef Vec3<unsigned int> Vec3u;
+    typedef Vec4<unsigned int> Vec4u;
 
     ///////////////////////////////////////////////////////
     /// Mat4f /////////////////////////////////////////////
     ///////////////////////////////////////////////////////
+
     struct Mat4f {
         /// properties ////////////////////////////////////////
 
@@ -639,6 +675,15 @@ namespace Type {
         }
 
         /// misc //////////////////////////////////////////////
+
+        // Returns the determinant of the upper left 3 x 3 submatrix
+        inline float det3x3() const {
+            return (
+                  _11 * (_22 * _33 - _23 * _32)
+                - _12 * (_21 * _33 - _23 * _31)
+                + _13 * (_21 * _32 - _22 * _31)
+            );
+        }
 
         Mat4f transposed() const {
             return Mat4f(
