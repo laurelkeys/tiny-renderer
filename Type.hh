@@ -406,6 +406,16 @@ namespace Type {
             w *= inv_length;
             return *this;
         }
+
+        Vec4 &homogenize() {
+            assert(w != T(0));
+            T inv_w = T(1) / w;
+            x *= inv_w;
+            y *= inv_w;
+            z *= inv_w;
+            w = T(1); // w *= inv_w;
+            return *this;
+        }
     };
 
     /// arithmetic (vector x scalar) //////////////////////
