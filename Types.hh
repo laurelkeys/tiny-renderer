@@ -1,5 +1,5 @@
-#ifndef __TYPE_HH__
-#define __TYPE_HH__
+#ifndef __TYPES_HH__
+#define __TYPES_HH__
 
 #include <cassert>
 #include <cmath>
@@ -755,4 +755,4 @@ namespace Type {
     }
 }
 
-#endif // __TYPE_HH__
+#endif // __TYPES_HH__
