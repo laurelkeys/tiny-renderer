@@ -1,13 +1,15 @@
 #include "Draw.hh"
 
+using Types::Vec2i;
+
 namespace Draw {
 
-    void point(Types::Vec2i at,
+    void point(Vec2i at,
                TGAImage &image, const TGAColor &color) {
         image.set(at.x, at.y, color);
     }
 
-    void line(Types::Vec2i from, Types::Vec2i to,
+    void line(Vec2i from, Vec2i to,
               TGAImage &image, const TGAColor &color) {
         if (std::abs(from.x - to.x) < std::abs(from.y - to.y)) {
             if (from.y > to.y)

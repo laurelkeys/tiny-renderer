@@ -26,7 +26,7 @@ namespace Math {
     /// common functions //////////////////////////////////
     ///////////////////////////////////////////////////////
 
-    // Return -1 if val < 0, zero if val == 0, and +1 if x > 0.
+    // Return -1 if val < 0, zero if val == 0, and +1 if x > 0
     template <typename T>
     inline int sgn(T val);
 
