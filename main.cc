@@ -1,14 +1,23 @@
-#include "TGAImage.hh"
+#include "colors.hh"
+#include "tgaimage.hh"
 
-const TGAColor white = TGAColor(255, 255, 255, 255);
-const TGAColor red   = TGAColor(255, 0,   0,   255);
+#include "Draw.hh"
+#include "Math.hh"
+#include "Types.hh"
+
+using Types::Vec2i;
+
+const Vec2i resolution(100, 100);
 
 int main(int argc, char **argv) {
-	const int width = 100, height = 100;
-    
-	TGAImage image(width, height, TGAImage::RGB);
-    
-	image.set(52, 41, red);
+    TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
+
+    for (int i = 0; i < 1000000; i++) {
+        Draw::line({ 13, 20 }, { 80, 40 }, image, white);
+        Draw::line({ 20, 13 }, { 40, 80 }, image, red);
+        Draw::line({ 80, 40 }, { 13, 20 }, image, red);
+    }
+
     image.flip_vertically(); // have the origin at the bottom left corner of the image
     image.write_tga_file("output.tga");
     return 0;

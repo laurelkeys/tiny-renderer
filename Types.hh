@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-namespace Type {
+namespace Types {
 
     ///////////////////////////////////////////////////////
     /// Vec2 //////////////////////////////////////////////
@@ -150,7 +150,7 @@ namespace Type {
 
     template <typename T>
     std::ostream &operator<<(std::ostream &out, const Vec2<T> &v) {
-        out << "(" << x << ", " << y << ")";
+        out << "(" << v.x << ", " << v.y << ")";
         return out;
     }
 
@@ -315,7 +315,7 @@ namespace Type {
 
     template <typename T>
     std::ostream &operator<<(std::ostream &out, const Vec3<T> &v) {
-        out << "(" << x << ", " << y << ", " << z << ")";
+        out << "(" << v.x << ", " << v.y << ", " << v.z << ")";
         return out;
     }
 
@@ -438,7 +438,7 @@ namespace Type {
         /// misc //////////////////////////////////////////////
 
         T length_squared() const {
-            return x * x + y * y + z * z + ;
+            return x * x + y * y + z * z + w * w;
         }
 
         T length() const {
@@ -490,7 +490,7 @@ namespace Type {
 
     template <typename T>
     std::ostream &operator<<(std::ostream &out, const Vec4<T> &v) {
-        out << "(" << x << ", " << y << ", " << z << ", " << w << ")";
+        out << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ")";
         return out;
     }
 
@@ -647,6 +647,7 @@ namespace Type {
             for (int i = 0; i < 4; ++i)
                 for (int j = 0; j < 4; ++j)
                     _m[4 * i + j] = a;
+            return *this;
         }
 
         /// arithmetic (matrix x vector) //////////////////////
