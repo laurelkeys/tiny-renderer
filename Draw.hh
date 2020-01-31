@@ -16,16 +16,18 @@ namespace Draw {
 
     void line(Types::Vec2i from, Types::Vec2i to,
               TGAImage &image, const TGAColor &color) {
-        // make dx positive (so we draw from left to right)
-        if (from.x > to.x)
-            std::swap(from, to);
+        if (std::abs(from.x - to.x) < std::abs(from.y - to.y)) {
+            if (from.y > to.y)
+                std::swap(from, to);
+            int dx = to.x - from.x;
+            int dy = to.y - from.y; // positive
 
-        int dx = to.x - from.x;
-        int dy = to.y - from.y;
-        int error2 = 0; // use 2 * error * dx (or dy) so we can avoid floats
+            // use error*dx*2 so we can avoid floats
+            int error2 = 0;
+            int derror2 = std::abs(dx) * 2;
 
-        if (dx < std::abs(dy)) {
-            int derror2 = std::abs(dx) * 2; // |dx| < |dy|
+            // |dx| < |dy|, so we always increase y by 1
+            // and check for when we need to increase x
             int inc_x = dx > 0 ? 1 : -1;
             int x = from.x;
             for (int y = from.y; y <= to.y; ++y) {
@@ -37,7 +39,17 @@ namespace Draw {
                 }
             }
         } else {
-            int derror2 = std::abs(dy) * 2; // |dx| >= |dy|
+            if (from.x > to.x)
+                std::swap(from, to);
+            int dx = to.x - from.x; // positive
+            int dy = to.y - from.y;
+
+            // use error*dy*2 so we can avoid floats
+            int error2 = 0;
+            int derror2 = std::abs(dy) * 2;
+
+            // |dx| > |dy|, so we always increase x by 1
+            // and check for when we need to increase y
             int inc_y = dy > 0 ? 1 : -1;
             int y = from.y;
             for (int x = from.x; x <= to.x; ++x) {
