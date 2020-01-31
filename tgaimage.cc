@@ -1,10 +1,3 @@
-#include <math.h>
-#include <time.h>
-#include <string.h>
-
-#include <fstream>
-#include <iostream>
-
 #include "tgaimage.hh"
 
 TGAImage::TGAImage()

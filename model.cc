@@ -1,9 +1,9 @@
 #include "model.hh"
 
-using Types::Vec2i;
-using Types::Vec3i;
 using Types::Vec2f;
+using Types::Vec2i;
 using Types::Vec3f;
+using Types::Vec3i;
 
 Model::Model(const char *filename)
     : verts_()
