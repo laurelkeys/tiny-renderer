@@ -26,16 +26,6 @@ namespace Draw {
         int dy = to.y - from.y;
         int error2 = 0; // use 2 * error so we can avoid floats
 
-        if (dx * dy == 0) {
-            if (dx == 0)
-                for (int y = from.y; y <= to.y; ++y)
-                    image.set(to.x, y, color); // from.x == to.x
-            else // dy == 0
-                for (int x = from.x; x <= to.x; ++x)
-                    image.set(x, to.y, color); // from.y == to.y
-            return;
-        }
-
         if (dx < std::abs(dy)) {
             int derror2 = std::abs(dx) * 2; // |dx| < |dy|
             int inc_x = dx > 0 ? 1 : -1;
