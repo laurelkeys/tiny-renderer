@@ -7,24 +7,22 @@
 
 #include "Types.hh"
 
-using Types::Vec2i;
-
 namespace Draw {
 
-    void point(Vec2i at,
+    void point(Types::Vec2i at,
                TGAImage &image, const TGAColor &color) {
         image.set(at.x, at.y, color);
     }
 
-    void line(Vec2i from, Vec2i to,
+    void line(Types::Vec2i from, Types::Vec2i to,
               TGAImage &image, const TGAColor &color) {
-        // make dx positive (so we draw left to right)
+        // make dx positive (so we draw from left to right)
         if (from.x > to.x)
             std::swap(from, to);
 
         int dx = to.x - from.x;
         int dy = to.y - from.y;
-        int error2 = 0; // use 2 * error so we can avoid floats
+        int error2 = 0; // use 2 * error * dx (or dy) so we can avoid floats
 
         if (dx < std::abs(dy)) {
             int derror2 = std::abs(dx) * 2; // |dx| < |dy|
