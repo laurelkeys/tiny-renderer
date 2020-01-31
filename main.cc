@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     }
 
     image.flip_vertically(); // have the origin at the bottom left corner of the image
-    image.write_tga_file("output2.tga");
+    image.write_tga_file("output.tga");
 
     delete model;
     return 0;
