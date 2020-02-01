@@ -1,11 +1,11 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 #include "tgaimage.hh"
 

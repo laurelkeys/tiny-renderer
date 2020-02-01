@@ -1,11 +1,15 @@
+#include "Draw.hh"
+
 #include <algorithm>
 
-#include "Draw.hh"
+#include "Math.hh"
 #include "Geometry.hh"
 
 using Types::Vec2i;
-using Types::Vec3f;
 using Types::Vec3i;
+
+using Types::Vec2f;
+using Types::Vec3f;
 
 namespace Draw {
 
@@ -66,13 +70,13 @@ namespace Draw {
     void triangle(Vec2i a, Vec2i b, Vec2i c,
                   TGAImage &image, const TGAColor &color) {
         const Vec2i bbox_min = Vec2i(
-            std::max(0, std::min(std::min(a.x, b.x), c.x)),
-            std::max(0, std::min(std::min(a.y, b.y), c.y))
+            std::max(0, Math::min(a.x, b.x, c.x)),
+            std::max(0, Math::min(a.y, b.y, c.y))
         ); // max({0, 0}, min(a, b, c))
 
         const Vec2i bbox_max = Vec2i(
-            std::min(std::max(std::max(a.x, b.x), c.x), image.get_width() - 1),
-            std::min(std::max(std::max(a.y, b.y), c.y), image.get_height() - 1)
+            std::min(Math::max(a.x, b.x, c.x), image.get_width() - 1),
+            std::min(Math::max(a.y, b.y, c.y), image.get_height() - 1)
         ); // min(max(a, b, c), {width, height})
 
         Vec2i p;

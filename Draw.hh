@@ -2,6 +2,7 @@
 #define __DRAW_HH__
 
 #include "tgaimage.hh"
+
 #include "Types.hh"
 
 namespace Draw {

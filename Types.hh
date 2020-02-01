@@ -83,6 +83,10 @@ namespace Types {
             return v.x != x || v.y != y;
         }
 
+        inline T dot(const Vec2 &v) const {
+            return x * v.x + y * v.y;
+        }
+
         /// arithmetic (vector x scalar) //////////////////////
 
         Vec2 operator*(const T &a) const {
@@ -132,18 +136,18 @@ namespace Types {
         }
     };
 
-    /// arithmetic (vector x scalar) //////////////////////
-
-    template <typename T>
-    inline Vec2<T> operator*(const T &a, const Vec2<T> &v) {
-        return v * a;
-    }
-
     /// arithmetic (vector x vector) //////////////////////
 
     template <typename T>
     inline T dot(const Vec2<T> &v1, const Vec2<T> &v2) {
         return v1.x * v2.x + v1.y * v2.y;
+    }
+
+    /// arithmetic (vector x scalar) //////////////////////
+
+    template <typename T>
+    inline Vec2<T> operator*(const T &a, const Vec2<T> &v) {
+        return v * a;
     }
 
     /// misc //////////////////////////////////////////////
@@ -236,6 +240,18 @@ namespace Types {
             return v.x != x || v.y != y || v.z != z;
         }
 
+        inline T dot(const Vec3 &v) const {
+            return x * v.x + y * v.y + z * v.z;
+        }
+
+        inline Vec3 cross(const Vec3 &v) const {
+            return Vec3(
+                y * v.z - z * v.y,
+                z * v.x - x * v.z,
+                x * v.y - y * v.x
+            );
+        }
+
         /// arithmetic (vector x scalar) //////////////////////
 
         Vec3 operator*(const T &a) const {
@@ -288,13 +304,6 @@ namespace Types {
         }
     };
 
-    /// arithmetic (vector x scalar) //////////////////////
-
-    template <typename T>
-    inline Vec3<T> operator*(const T &a, const Vec3<T> &v) {
-        return v * a;
-    }
-
     /// arithmetic (vector x vector) //////////////////////
 
     template <typename T>
@@ -309,6 +318,13 @@ namespace Types {
             v1.z * v2.x - v1.x * v2.z,
             v1.x * v2.y - v1.y * v2.x
         );
+    }
+
+    /// arithmetic (vector x scalar) //////////////////////
+
+    template <typename T>
+    inline Vec3<T> operator*(const T &a, const Vec3<T> &v) {
+        return v * a;
     }
 
     /// misc //////////////////////////////////////////////
@@ -407,6 +423,10 @@ namespace Types {
             return v.x != x || v.y != y || v.z != z || v.w != w;
         }
 
+        inline T dot(const Vec4 &v) {
+            return x * v.x + y * v.y + z * v.z + w * v.w;
+        }
+
         /// arithmetic (vector x scalar) //////////////////////
 
         Vec4 operator*(const T &a) const {
@@ -472,18 +492,18 @@ namespace Types {
         }
     };
 
-    /// arithmetic (vector x scalar) //////////////////////
-
-    template <typename T>
-    inline Vec4<T> operator*(const T &a, const Vec4<T> &v) {
-        return v * a;
-    }
-
     /// arithmetic (vector x vector) //////////////////////
 
     template <typename T>
     inline T dot(const Vec4<T> &v1, const Vec4<T> &v2) {
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
+    }
+
+    /// arithmetic (vector x scalar) //////////////////////
+
+    template <typename T>
+    inline Vec4<T> operator*(const T &a, const Vec4<T> &v) {
+        return v * a;
     }
 
     /// misc //////////////////////////////////////////////
@@ -653,9 +673,9 @@ namespace Types {
             for (int i = 0; i < 4; ++i)
                 for (int j = 0; j < 4; ++j)
                     result._m[4 * i + j] = (
-                        _m[4 * i + 0] * m._m[4 * 0 + j] + 
-                        _m[4 * i + 1] * m._m[4 * 1 + j] + 
-                        _m[4 * i + 2] * m._m[4 * 2 + j] + 
+                        _m[4 * i + 0] * m._m[4 * 0 + j] +
+                        _m[4 * i + 1] * m._m[4 * 1 + j] +
+                        _m[4 * i + 2] * m._m[4 * 2 + j] +
                         _m[4 * i + 3] * m._m[4 * 3 + j]
                     );
             return result;
