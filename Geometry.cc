@@ -8,7 +8,7 @@ using Types::Vec3f;
 
 namespace Geometry {
 
-    Vec3f barycentric_coords(const Vec2i &p, const Triangle<int> &abc) {
+    Vec3f barycentric_coords(const Vec2i &p, const Triangle2D<int> &abc) {
         Vec2i AB = abc.b - abc.a;
         Vec2i AC = abc.c - abc.a;
         Vec2i PA = abc.a - p;
@@ -34,8 +34,15 @@ namespace Geometry {
         );
     }
 
-    Vec2f barycentric_interp(const Vec3f &coords, const Triangle<int> &abc) {
-        // (1-u-v) * a + u * b + v * c
-        return coords.x * Vec2f(abc.a) + coords.y * Vec2f(abc.b) + coords.z * Vec2f(abc.c);
+    Vec2f barycentric_interp(const Vec3f &coords, const Triangle2D<int> &abc) {
+        return coords.x * Vec2f(abc.a) +
+               coords.y * Vec2f(abc.b) +
+               coords.z * Vec2f(abc.c); // (1-u-v) * a + u * b + v * c
+    }
+
+    Vec3f barycentric_interp(const Vec3f &coords, const Triangle3D<int> &abc) {
+        return coords.x * Vec3f(abc.a) +
+               coords.y * Vec3f(abc.b) +
+               coords.z * Vec3f(abc.c); // (1-u-v) * a + u * b + v * c
     }
 }

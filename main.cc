@@ -7,6 +7,7 @@
 #include "Types.hh"
 
 using Types::Vec2i;
+
 using Types::Vec3f;
 
 Model *model = NULL;
@@ -14,6 +15,9 @@ const Vec2i resolution(800, 800);
 
 int main(int argc, char **argv) {
     model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
+
+    int *z_buffer = new int[resolution.x * resolution.y];
+    std::fill_n(z_buffer, resolution.x * resolution.y, Math::MIN_INT);
 
     TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
     Vec3f light_direction(0, 0, -1);
@@ -44,7 +48,7 @@ int main(int argc, char **argv) {
         if (intensity > 0) {
             Draw::triangle(
                 screen_coords[0], screen_coords[1], screen_coords[2], 
-                image, TGAColor(intensity * 255, intensity * 255, intensity * 255)
+                z_buffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255)
             );
         }
     }
@@ -53,5 +57,6 @@ int main(int argc, char **argv) {
     image.write_tga_file("output.tga");
 
     delete model;
+    delete[] z_buffer;
     return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef __MATH_HH__
 #define __MATH_HH__
 
+#include <algorithm>
 #include <limits>
 
 namespace Math {

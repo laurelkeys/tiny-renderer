@@ -1,16 +1,45 @@
 #ifndef __GEOMETRY_HH__
 #define __GEOMETRY_HH__
 
+#include "Math.hh"
 #include "Types.hh"
 
 namespace Geometry {
 
     template <typename T>
-    struct Triangle {
-        Types::Vec2<T> a, b, c; // positions of the vertices
+    struct Triangle2D {
+        Types::Vec2<T> a, b, c; // vertices positions
 
-        Triangle() = delete;
-        explicit Triangle(Types::Vec2<T> a, Types::Vec2<T> b, Types::Vec2<T> c)
+        Triangle2D() = delete;
+        explicit Triangle2D(Types::Vec2<T> a, Types::Vec2<T> b, Types::Vec2<T> c)
+            : a(a)
+            , b(b)
+            , c(c) { }
+
+        Types::Vec3f barycentric_coords(const Types::Vec2<T> &p) {
+            Types::Vec2<T> AB = b - a, AC = c - a, PA = a - p;
+            Types::Vec3<T> coords = cross(
+                Types::Vec3<T>(AC.x, AB.x, PA.x),
+                Types::Vec3<T>(AC.y, AB.y, PA.y)
+            );
+
+            float area2 = static_cast<float>(coords.z); // 2 * area(a, b, c)
+
+            if (std::abs(area2) <= Math::EPS_FLOAT) // area == 0 (degenerate triangle)
+                return Types::Vec3f(-1, 1, 1); // return a negative coordinate so it's skipped
+
+            float u = static_cast<float>(coords.y) / area2;
+            float v = static_cast<float>(coords.x) / area2;
+            return Types::Vec3f(1.0f - u - v, u, v);
+        }
+    };
+
+    template <typename T>
+    struct Triangle3D {
+        Types::Vec3<T> a, b, c; // vertices positions
+
+        Triangle3D() = delete;
+        explicit Triangle3D(Types::Vec3<T> a, Types::Vec3<T> b, Types::Vec3<T> c)
             : a(a)
             , b(b)
             , c(c) { }
@@ -21,15 +50,30 @@ namespace Geometry {
     // obs.: the sum of the barycentric coordinates is 1, and p only lies inside abc iff all coordinates are positive
     Types::Vec3f barycentric_coords(
         const Types::Vec2i &p,
-        const Triangle<int> &abc
+        const Triangle2D<int> &abc
     );
 
     // Uses the barycentric coordinates as interpolation coefficients
     // to perform a weighted mix of the values of the triangle vertices
     // ref.: https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
+    template <typename Scalar>
+    float barycentric_interp(
+        const Types::Vec3f &coords,
+        Scalar a, Scalar b, Scalar c
+    ) {
+        return coords.x * static_cast<float>(a) +
+               coords.y * static_cast<float>(b) +
+               coords.z * static_cast<float>(c); // (1-u-v) * a + u * b + v * c
+    }
+
     Types::Vec2f barycentric_interp(
         const Types::Vec3f &coords,
-        const Triangle<int> &abc
+        const Triangle2D<int> &abc
+    );
+
+    Types::Vec3f barycentric_interp(
+        const Types::Vec3f &coords,
+        const Triangle3D<int> &abc
     );
 }
 
