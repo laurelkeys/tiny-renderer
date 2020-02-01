@@ -1,6 +1,10 @@
+#include <algorithm>
+
 #include "Draw.hh"
+#include "Geometry.hh"
 
 using Types::Vec2i;
+using Types::Vec3f;
 
 namespace Draw {
 
@@ -54,6 +58,26 @@ namespace Draw {
                     y += inc_y;
                     error2 -= dx * 2;
                 }
+            }
+        }
+    }
+
+    void triangle(Vec2i a, Vec2i b, Vec2i c,
+                  TGAImage &image, const TGAColor &color) {
+        const Vec2i bbox_min(std::max(0, std::min(std::min(a.x, b.x), c.x)),
+                             std::max(0, std::min(std::min(a.y, b.y), c.y)));
+        const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(a.x, b.x), c.x)),
+                             std::min(image.get_height() - 1, std::max(std::max(a.y, b.y), c.y)));
+
+        Vec2i p;
+        for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
+            for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
+                Vec3f bc_screen = Geometry::barycentric_coords(p, Geometry::Triangle<int>(a, b, c));
+
+                if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                    continue; // point lies outside the triangle
+
+                image.set(p.x, p.y, color);
             }
         }
     }

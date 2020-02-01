@@ -1,5 +1,5 @@
-#include "model.hh"
 #include "colors.hh"
+#include "model.hh"
 #include "tgaimage.hh"
 
 #include "Draw.hh"
@@ -10,29 +10,18 @@ using Types::Vec2i;
 using Types::Vec3f;
 
 Model *model = nullptr;
-const Vec2i resolution(800, 800);
+const Vec2i resolution(200, 200);
 
 int main(int argc, char **argv) {
-    model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
+    // model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
     TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
 
-    for (int i = 0; i < model->nfaces(); i++) {
-        std::vector<int> face = model->face(i);
-        for (int j = 0; j < 3; j++) {
-            Vec3f v0 = model->vert(face[j]);
-            Vec3f v1 = model->vert(face[(j + 1) % 3]);
-            int x0 = (v0.x + 1.) * resolution.x / 2.;
-            int y0 = (v0.y + 1.) * resolution.y / 2.;
-            int x1 = (v1.x + 1.) * resolution.x / 2.;
-            int y1 = (v1.y + 1.) * resolution.y / 2.;
-            Draw::line({ x0, y0 }, { x1, y1 }, image, white);
-        }
-    }
+    Draw::triangle(Vec2i(10, 10), Vec2i(100, 30), Vec2i(190, 160), image, red);
 
     image.flip_vertically(); // have the origin at the bottom left corner of the image
     image.write_tga_file("output.tga");
 
-    delete model;
+    // delete model;
     return 0;
 }
