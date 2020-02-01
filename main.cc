@@ -16,23 +16,37 @@ int main(int argc, char **argv) {
     model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
     TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
+    Vec3f light_direction(0, 0, -1);
 
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
-        
-        Vec2i screen_coords[3]; // three vertices
+
+        // store the three vertices of each triangle
+        Vec3f world_coords[3];
+        Vec2i screen_coords[3];
         for (int j = 0; j < 3; j++) {
-            Vec3f world_coords = model->vert(face[j]);
+            Vec3f v = model->vert(face[j]);
+            world_coords[j] = v; // [-1, 1]
             screen_coords[j] = Vec2i(
-                (world_coords.x + 1.) * resolution.x / 2., // map [-1, 1] to [0, width]
-                (world_coords.y + 1.) * resolution.y / 2.  // map [-1, 1] to [0, height]
+                (v.x + 1.) * resolution.x / 2., // map [-1, 1] to [0, width]
+                (v.y + 1.) * resolution.y / 2.  // map [-1, 1] to [0, height]
             );
         }
-        
-        Draw::triangle(
-            screen_coords[0], screen_coords[1], screen_coords[2], 
-            image, TGAColor(rand() % 255, rand() % 255, rand() % 255)
-        );
+
+        Vec3f n = cross(
+            world_coords[2] - world_coords[0], // use the cross product of two segments
+            world_coords[1] - world_coords[0]  // of the triangle to compute a face normal
+        ).normalize();
+    
+        float intensity = n.dot(light_direction);
+        // intensity < 0 means the light is coming from behind the polygon,
+        // so we ignore it (obs.: this is called back-face culling)
+        if (intensity > 0) {
+            Draw::triangle(
+                screen_coords[0], screen_coords[1], screen_coords[2], 
+                image, TGAColor(intensity * 255, intensity * 255, intensity * 255)
+            );
+        }
     }
 
     image.flip_vertically(); // have the origin at the bottom left corner of the image
