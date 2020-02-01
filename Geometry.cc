@@ -28,7 +28,7 @@ namespace Geometry {
         }
 
         return Vec3f(
-            1.0f - (coords.x + coords.y) / static_cast<float>(coords.z), // 1 - u - v
+            1 - (coords.x + coords.y) / static_cast<float>(coords.z), // 1 - u - v
             coords.y / static_cast<float>(coords.z), // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
             coords.x / static_cast<float>(coords.z)  // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
         );

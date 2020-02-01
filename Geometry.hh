@@ -25,12 +25,18 @@ namespace Geometry {
 
             float area2 = static_cast<float>(coords.z); // 2 * area(a, b, c)
 
-            if (std::abs(area2) <= Math::EPS_FLOAT) // area == 0 (degenerate triangle)
-                return Types::Vec3f(-1, 1, 1); // return a negative coordinate so it's skipped
+            if (std::abs(area2) <= Math::EPS_FLOAT) {
+                // the triangle is degenerate (area == 0), so we
+                // return a negative coordinate for it to be skipped, since
+                // p is inside the triangle iff 0 <= u, v <= 1 and u + v <= 1
+                return Types::Vec3f(-1, 1, 1);
+            }
 
-            float u = static_cast<float>(coords.y) / area2;
-            float v = static_cast<float>(coords.x) / area2;
-            return Types::Vec3f(1.0f - u - v, u, v);
+            return Types::Vec3f(
+                1 - (coords.y + coords.x) / area2, // 1 - u - v
+                coords.y / area2, // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
+                coords.x / area2  // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
+            );
         }
     };
 

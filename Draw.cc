@@ -80,8 +80,7 @@ namespace Draw {
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Geometry::barycentric_coords(p, Geometry::Triangle2D<int>(a, b, c));
-                // Vec3f coords = Geometry::Triangle2D<int>(a, b, c).barycentric_coords(p);
+                Vec3f coords = Geometry::Triangle2D<int>(a, b, c).barycentric_coords(p);
 
                 if (coords.x < 0 || coords.y < 0 || coords.z < 0)
                     continue; // point lies outside the triangle
