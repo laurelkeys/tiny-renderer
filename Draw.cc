@@ -82,16 +82,12 @@ namespace Draw {
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f bc_screen = Geometry::barycentric_coords(p, Geometry::Triangle<int>(a, b, c));
+                Vec3f coords = Geometry::barycentric_coords(p, Geometry::Triangle<int>(a, b, c));
 
-                if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+                if (coords.x < 0 || coords.y < 0 || coords.z < 0)
                     continue; // point lies outside the triangle
 
-                Vec3f col = bc_screen.x * Vec3f(255, 0, 0) +
-                            bc_screen.y * Vec3f(0, 255, 0) +
-                            bc_screen.z * Vec3f(0, 0, 255);
-
-                image.set(p.x, p.y, TGAColor(col.x, col.y, col.z));
+                image.set(p.x, p.y, color);
             }
         }
     }
