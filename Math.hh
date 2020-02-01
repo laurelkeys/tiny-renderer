@@ -21,7 +21,7 @@ namespace Math {
     static const float INV_FOURPI   = 0.07957747154594766788f;
     static const float SQRT_TWO     = 1.41421356237309504880f;
     static const float INV_SQRT_TWO = 0.70710678118654752440f;
-    
+
     ///////////////////////////////////////////////////////
     /// common functions //////////////////////////////////
     ///////////////////////////////////////////////////////

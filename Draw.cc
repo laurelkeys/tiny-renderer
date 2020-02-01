@@ -5,6 +5,7 @@
 
 using Types::Vec2i;
 using Types::Vec3f;
+using Types::Vec3i;
 
 namespace Draw {
 
@@ -64,10 +65,15 @@ namespace Draw {
 
     void triangle(Vec2i a, Vec2i b, Vec2i c,
                   TGAImage &image, const TGAColor &color) {
-        const Vec2i bbox_min(std::max(0, std::min(std::min(a.x, b.x), c.x)),
-                             std::max(0, std::min(std::min(a.y, b.y), c.y)));
-        const Vec2i bbox_max(std::min(image.get_width() - 1, std::max(std::max(a.x, b.x), c.x)),
-                             std::min(image.get_height() - 1, std::max(std::max(a.y, b.y), c.y)));
+        const Vec2i bbox_min = Vec2i(
+            std::max(0, std::min(std::min(a.x, b.x), c.x)),
+            std::max(0, std::min(std::min(a.y, b.y), c.y))
+        ); // max({0, 0}, min(a, b, c))
+
+        const Vec2i bbox_max = Vec2i(
+            std::min(std::max(std::max(a.x, b.x), c.x), image.get_width() - 1),
+            std::min(std::max(std::max(a.y, b.y), c.y), image.get_height() - 1)
+        ); // min(max(a, b, c), {width, height})
 
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
@@ -77,7 +83,11 @@ namespace Draw {
                 if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
                     continue; // point lies outside the triangle
 
-                image.set(p.x, p.y, color);
+                Vec3f col = bc_screen.x * Vec3f(255, 0, 0) +
+                            bc_screen.y * Vec3f(0, 255, 0) +
+                            bc_screen.z * Vec3f(0, 0, 255);
+
+                image.set(p.x, p.y, TGAColor(col.x, col.y, col.z));
             }
         }
     }
