@@ -6,8 +6,11 @@
 #include "Geometry.hh"
 
 using Types::Vec2i;
+using Types::Vec3i;
 
 using Types::Vec3f;
+
+using Geometry::Triangle2D;
 
 namespace Draw {
 
@@ -65,7 +68,7 @@ namespace Draw {
         }
     }
 
-    void triangle(Vec2i a, Vec2i b, Vec2i c,
+    void triangle(Vec3i a, Vec3i b, Vec3i c,
                   int z_buffer[], TGAImage &image, const TGAColor &color) {
         const Vec2i bbox_min = Vec2i(
             std::max(0, Math::min(a.x, b.x, c.x)),
@@ -77,15 +80,21 @@ namespace Draw {
             std::min(Math::max(a.y, b.y, c.y), image.get_height() - 1)
         ); // min(max(a, b, c), {width, height})
 
+        const Vec3f vertex_depths(a.z, b.z, c.z);
+
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Geometry::Triangle2D<int>(a, b, c).barycentric_coords(p);
+                Vec3f coords = Triangle2D<int>(a.xy(), b.xy(), c.xy()).barycentric_coords(p);
 
                 if (coords.x < 0 || coords.y < 0 || coords.z < 0)
                     continue; // point lies outside the triangle
 
-                image.set(p.x, p.y, color);
+                float pz = Geometry::barycentric_interp(coords, vertex_depths);
+                if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
+                    z_buffer[int(p.x + p.y * image.get_width())] = pz;
+                    image.set(p.x, p.y, color);
+                }
             }
         }
     }

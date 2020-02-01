@@ -18,7 +18,7 @@ namespace Draw {
     );
 
     void triangle(
-        Types::Vec2i a, Types::Vec2i b, Types::Vec2i c,
+        Types::Vec3i a, Types::Vec3i b, Types::Vec3i c,
         int z_buffer[], TGAImage &image, const TGAColor &color
     );
 }

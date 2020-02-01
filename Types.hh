@@ -302,6 +302,10 @@ namespace Types {
             z *= inv_length;
             return *this;
         }
+
+        Vec2<T> xy() const {
+            return Vec2<T>(x, y);
+        }
     };
 
     /// arithmetic (vector x vector) //////////////////////

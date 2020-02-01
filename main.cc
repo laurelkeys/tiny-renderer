@@ -7,6 +7,7 @@
 #include "Types.hh"
 
 using Types::Vec2i;
+using Types::Vec3i;
 
 using Types::Vec3f;
 
@@ -27,13 +28,14 @@ int main(int argc, char **argv) {
 
         // store the three vertices of each triangle
         Vec3f world_coords[3];
-        Vec2i screen_coords[3];
+        Vec3i screen_coords[3];
         for (int j = 0; j < 3; j++) {
             Vec3f v = model->vert(face[j]);
             world_coords[j] = v; // [-1, 1]
-            screen_coords[j] = Vec2i(
+            screen_coords[j] = Vec3i(
                 (v.x + 1.) * resolution.x / 2., // map [-1, 1] to [0, width]
-                (v.y + 1.) * resolution.y / 2.  // map [-1, 1] to [0, height]
+                (v.y + 1.) * resolution.y / 2., // map [-1, 1] to [0, height]
+                (v.z + 1.) * 255 / 2.           // map [-1, 1] to [0, 255]
             );
         }
 

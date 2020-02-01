@@ -62,14 +62,14 @@ namespace Geometry {
     // Uses the barycentric coordinates as interpolation coefficients
     // to perform a weighted mix of the values of the triangle vertices
     // ref.: https://fgiesen.wordpress.com/2013/02/06/the-barycentric-conspirac/
-    template <typename Scalar>
+    template <typename T>
     float barycentric_interp(
         const Types::Vec3f &coords,
-        Scalar a, Scalar b, Scalar c
+        const Types::Vec3<T> &abc
     ) {
-        return coords.x * static_cast<float>(a) +
-               coords.y * static_cast<float>(b) +
-               coords.z * static_cast<float>(c); // (1-u-v) * a + u * b + v * c
+        return coords.x * static_cast<float>(abc.x) +
+               coords.y * static_cast<float>(abc.y) +
+               coords.z * static_cast<float>(abc.z); // (1-u-v) * a + u * b + v * c
     }
 
     Types::Vec2f barycentric_interp(
