@@ -33,16 +33,4 @@ namespace Geometry {
             coords.x / static_cast<float>(coords.z)  // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
         );
     }
-
-    Vec2f barycentric_interp(const Vec3f &coords, const Triangle2D<int> &abc) {
-        return coords.x * Vec2f(abc.a) +
-               coords.y * Vec2f(abc.b) +
-               coords.z * Vec2f(abc.c); // (1-u-v) * a + u * b + v * c
-    }
-
-    Vec3f barycentric_interp(const Vec3f &coords, const Triangle3D<int> &abc) {
-        return coords.x * Vec3f(abc.a) +
-               coords.y * Vec3f(abc.b) +
-               coords.z * Vec3f(abc.c); // (1-u-v) * a + u * b + v * c
-    }
 }

@@ -64,12 +64,10 @@ namespace Obj {
             std::vector<Types::Vec3f> _positions;
             std::vector<Types::Vec2f> _uv_textures;
             std::vector<Types::Vec3f> _normals; // obs.: normals might not be unit vectors
-
             std::vector<FaceIndices> _faces_indices;
-
-            TGAImage _diffuse_map;
-            // TGAImage _normal_map;
-            // TGAImage _specular_map;
+            TGAImage _diffuse_map;  // color
+            TGAImage _normal_map;   // bump
+            TGAImage _specular_map; // reflection
 
             void load_texture(
                 std::string filename, const char *suffix,
@@ -106,9 +104,9 @@ namespace Obj {
 
             /// texture maps //////////////////////////////////////
 
-            TGAColor diffuse_map(Types::Vec2f uv);
-            // Types::Vec3f normal_map(Types::Vec2f uv);
-            // float specular_map(Types::Vec2f uv);
+            TGAColor diffuse_map_at(Types::Vec2f uv) const;
+            Types::Vec3f normal_map_at(Types::Vec2f uv) const;
+            float specular_map_at(Types::Vec2f uv) const;
     };
 }
 

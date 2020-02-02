@@ -8,6 +8,7 @@
 using Types::Vec2i;
 using Types::Vec3i;
 
+using Types::Vec2f;
 using Types::Vec3f;
 
 using Geometry::Triangle2D;
@@ -69,7 +70,8 @@ namespace Draw {
     }
 
     void triangle(Vec3i a, Vec3i b, Vec3i c,
-                  int z_buffer[], TGAImage &image, const TGAColor &color) {
+                  Vec2f a_uv, Vec2f b_uv, Vec2f c_uv,
+                  int z_buffer[], TGAImage &image, Obj::Model *model) {
         const Vec2i bbox_min = Vec2i(
             std::max(0, Math::min(a.x, b.x, c.x)),
             std::max(0, Math::min(a.y, b.y, c.y))
@@ -93,6 +95,15 @@ namespace Draw {
                 float pz = Geometry::barycentric_interp(coords, vertex_depths);
                 if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
                     z_buffer[int(p.x + p.y * image.get_width())] = pz;
+
+                    TGAColor color = model->diffuse_map_at(
+                        Geometry::barycentric_interp(
+                            coords, 
+                            Geometry::Triangle2D<float>(
+                                a_uv, b_uv, c_uv
+                            )
+                        )
+                    );
                     image.set(p.x, p.y, color);
                 }
             }

@@ -72,15 +72,25 @@ namespace Geometry {
                coords.z * static_cast<float>(abc.z); // (1-u-v) * a + u * b + v * c
     }
 
+    template <typename T>
     Types::Vec2f barycentric_interp(
         const Types::Vec3f &coords,
-        const Triangle2D<int> &abc
-    );
+        const Triangle2D<T> &abc
+    ) {
+        return coords.x * Types::Vec2<float>(abc.a) +
+               coords.y * Types::Vec2<float>(abc.b) +
+               coords.z * Types::Vec2<float>(abc.c); // (1-u-v) * a + u * b + v * c
+    }
 
+    template <typename T>
     Types::Vec3f barycentric_interp(
         const Types::Vec3f &coords,
-        const Triangle3D<int> &abc
-    );
+        const Triangle3D<T> &abc
+    ) {
+        return coords.x * Types::Vec3<float>(abc.a) +
+               coords.y * Types::Vec3<float>(abc.b) +
+               coords.z * Types::Vec3<float>(abc.c); // (1-u-v) * a + u * b + v * c
+    };
 }
 
 #endif // __GEOMETRY_HH__

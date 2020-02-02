@@ -3,6 +3,7 @@
 
 #include "tgaimage.hh"
 
+#include "Obj.hh"
 #include "Types.hh"
 
 namespace Draw {
@@ -17,9 +18,15 @@ namespace Draw {
         TGAImage &image, const TGAColor &color
     );
 
+    // void triangle(
+    //     Types::Vec3i a, Types::Vec3i b, Types::Vec3i c,
+    //     int z_buffer[], TGAImage &image, const TGAColor &color
+    // );
+
     void triangle(
         Types::Vec3i a, Types::Vec3i b, Types::Vec3i c,
-        int z_buffer[], TGAImage &image, const TGAColor &color
+        Types::Vec2f a_uv, Types::Vec2f b_uv, Types::Vec2f c_uv,
+        int z_buffer[], TGAImage &image, Obj::Model *model
     );
 }
 
