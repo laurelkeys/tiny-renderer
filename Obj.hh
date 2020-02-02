@@ -7,38 +7,9 @@
 #include "tgaimage.hh"
 
 #include "Types.hh"
+#include "Primitives.hh"
 
 namespace Obj {
-
-    ///////////////////////////////////////////////////////
-    /// Vertex ////////////////////////////////////////////
-    ///////////////////////////////////////////////////////
-
-    struct Vertex {
-        // obs.: using [-1.0, 1.0] instead of [0.0, 1.0] accounts for wrapping
-        Types::Vec3f pos;    // v  : (x, y, z) ∈ [-1.0, 1.0], geometric position
-        Types::Vec2f uv;     // vt : (u, v)    ∈ [-1.0, 1.0], UV texture coordinates
-        Types::Vec3f normal; // vn : (i, j, k) ∈ [-1.0, 1.0], vertex normal
-
-        Vertex() = delete;
-
-        explicit Vertex(const Types::Vec3f &pos)
-            : pos(pos) { }
-
-        explicit Vertex(const Types::Vec3f &pos, const Types::Vec2f &uv)
-            : pos(pos)
-            , uv(uv) { }
-
-        explicit Vertex(const Types::Vec3f &pos, const Types::Vec2f &uv, const Types::Vec3f &normal)
-            : pos(pos)
-            , uv(uv)
-            , normal(normal) { }
-
-        Vertex(const Vertex &vert)
-            : pos(vert.pos)
-            , uv(vert.uv)
-            , normal(vert.normal) { }
-    };
 
     ///////////////////////////////////////////////////////
     /// VertexIndices /////////////////////////////////////
@@ -62,26 +33,6 @@ namespace Obj {
             : p(p)
             , t(t)
             , n(n) { }
-    };
-
-    ///////////////////////////////////////////////////////
-    /// Face //////////////////////////////////////////////
-    ///////////////////////////////////////////////////////
-
-    struct Face {
-        Vertex v0;
-        Vertex v1;
-        Vertex v2;
-
-        Face() = default;
-
-        explicit Face(const Vertex &v0, const Vertex &v1, const Vertex &v2)
-            : v0(v0)
-            , v1(v1)
-            , v2(v2) { }
-
-        Vertex &operator[](unsigned int i);
-        const Vertex &operator[](unsigned int i) const;
     };
 
     ///////////////////////////////////////////////////////
@@ -134,10 +85,10 @@ namespace Obj {
 
             /// property accessors ////////////////////////////////
 
-            Face face(int i); // builds a face from _faces_indices
+            Primitives::Face face(int i); // builds a face from _faces_indices
 
-            Vertex vertex(VertexIndices i);
-            Vertex vertex(int iface, int nthvert);
+            Primitives::Vertex vertex(VertexIndices i);
+            Primitives::Vertex vertex(int iface, int nthvert);
 
             // below are some leaky abstractions,
             // you should favor using the ones above

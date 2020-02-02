@@ -11,32 +11,6 @@ using Types::Vec3f;
 namespace Obj {
 
     ///////////////////////////////////////////////////////
-    /// Face //////////////////////////////////////////////
-    ///////////////////////////////////////////////////////
-
-    Vertex &Face::operator[](unsigned int i) {
-        switch (i) {
-            case 0: return v0;
-            case 1: return v1;
-            case 2: return v2;
-            default: // invalid index
-                assert(i < 3);
-                return v0;
-        }
-    }
-
-    const Vertex &Face::operator[](unsigned int i) const {
-        switch (i) {
-            case 0: return v0;
-            case 1: return v1;
-            case 2: return v2;
-            default: // invalid index
-                assert(i < 3);
-                return v0;
-        }
-    }
-
-    ///////////////////////////////////////////////////////
     /// FaceIndices ///////////////////////////////////////
     ///////////////////////////////////////////////////////
 
@@ -149,24 +123,24 @@ namespace Obj {
         return static_cast<int>(_faces_indices.size());
     }
 
-    Face Model::face(int i) {
+    Primitives::Face Model::face(int i) {
         FaceIndices face_indices = _faces_indices[i];
-        return Face(
+        return Primitives::Face(
             vertex(face_indices.v0),
             vertex(face_indices.v1),
             vertex(face_indices.v2)
         );
     }
 
-    Vertex Model::vertex(VertexIndices i) {
-        return Vertex(
+    Primitives::Vertex Model::vertex(VertexIndices i) {
+        return Primitives::Vertex(
             _positions[i.p],
             _uv_textures[i.t],
             _normals[i.n]
         );
     }
 
-    Vertex Model::vertex(int iface, int nthvert) {
+    Primitives::Vertex Model::vertex(int iface, int nthvert) {
         VertexIndices i = _faces_indices[iface][nthvert];
         return vertex(i);
     }

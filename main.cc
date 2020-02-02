@@ -5,6 +5,7 @@
 #include "Draw.hh"
 #include "Math.hh"
 #include "Types.hh"
+#include "Primitives.hh"
 
 using Types::Vec2i;
 using Types::Vec3i;
@@ -24,7 +25,7 @@ int main(int argc, char **argv) {
     Vec3f light_direction(0, 0, -1);
 
     for (int i = 0; i < model->n_of_faces(); i++) {
-        Obj::Face face = model->face(i);
+        Primitives::Face face = model->face(i);
 
         // store the three vertices positions of each triangle
         Vec3f world_coords[3];
