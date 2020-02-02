@@ -14,7 +14,7 @@ namespace Obj {
     /// Face //////////////////////////////////////////////
     ///////////////////////////////////////////////////////
 
-    VertexIndices &Face::operator[](unsigned int i) {
+    Vertex &Face::operator[](unsigned int i) {
         switch (i) {
             case 0: return v0;
             case 1: return v1;
@@ -25,7 +25,33 @@ namespace Obj {
         }
     }
 
-    const VertexIndices &Face::operator[](unsigned int i) const {
+    const Vertex &Face::operator[](unsigned int i) const {
+        switch (i) {
+            case 0: return v0;
+            case 1: return v1;
+            case 2: return v2;
+            default: // invalid index
+                assert(i < 3);
+                return v0;
+        }
+    }
+
+    ///////////////////////////////////////////////////////
+    /// FaceIndices ///////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    VertexIndices &FaceIndices::operator[](unsigned int i) {
+        switch (i) {
+            case 0: return v0;
+            case 1: return v1;
+            case 2: return v2;
+            default: // invalid index
+                assert(i < 3);
+                return v0;
+        }
+    }
+
+    const VertexIndices &FaceIndices::operator[](unsigned int i) const {
         switch (i) {
             case 0: return v0;
             case 1: return v1;
@@ -44,7 +70,7 @@ namespace Obj {
         : _positions()
         , _uv_textures()
         , _normals()
-        , _faces()
+        , _faces_indices()
         , _diffuse_map() {
         std::ifstream in;
         in.open(filename, std::ifstream::in);
@@ -76,24 +102,24 @@ namespace Obj {
                     iss >> n[i];
                 _normals.push_back(n);
             } else if (!line.compare(0, 2, "f ")) {
-                Face face;
+                iss >> trash;
+                FaceIndices face_indices;
                 int nth = 0;
                 int p, t, n; // vertex indices in _positions, _uv_textures and _normals
-                iss >> trash;
                 while (iss >> p >> trash >> t >> trash >> n) {
                     assert(nth < 3);
                     // in wavefront obj all indices start at 1, not zero
-                    face[nth++] = VertexIndices(p - 1, t - 1, n - 1);
+                    face_indices[nth++] = VertexIndices(p - 1, t - 1, n - 1);
                 }
                 assert(nth == 3); // triangular faces
-                _faces.push_back(face);
+                _faces_indices.push_back(face_indices);
             }
         }
 
         std::cerr << "# v# " << _positions.size()
                   << " vt# " << _uv_textures.size()
                   << " vn# " << _normals.size()
-                  << " f# " << _faces.size()
+                  << " f# "  << _faces_indices.size()
                   << std::endl;
 
         load_texture(filename, "_diffuse.tga", _diffuse_map);
@@ -120,46 +146,57 @@ namespace Obj {
     }
 
     int Model::n_of_faces() {
-        return static_cast<int>(_faces.size());
+        return static_cast<int>(_faces_indices.size());
     }
 
     Face Model::face(int i) {
-        return _faces[i];
+        FaceIndices face_indices = _faces_indices[i];
+        return Face(
+            vertex(face_indices.v0),
+            vertex(face_indices.v1),
+            vertex(face_indices.v2)
+        );
     }
 
     Vertex Model::vertex(VertexIndices i) {
         return Vertex(
             _positions[i.p],
             _uv_textures[i.t],
-            _normals[i.n]);
-    }
-    Vertex Model::vertex(int iface, int nthvert) {
-        VertexIndices i = _faces[iface][nthvert];
-        return Vertex(
-            _positions[i.p],
-            _uv_textures[i.t],
-            _normals[i.n]);
+            _normals[i.n]
+        );
     }
 
-    Types::Vec3f Model::position(int i) {
+    Vertex Model::vertex(int iface, int nthvert) {
+        VertexIndices i = _faces_indices[iface][nthvert];
+        return vertex(i);
+    }
+
+    FaceIndices Model::face_indices(int i) {
+        return _faces_indices[i];
+    }
+
+    Vec3f Model::position(int i) {
         return _positions[i];
     }
-    Types::Vec3f Model::position(int iface, int nthvert) {
-        return position(_faces[iface][nthvert].p);
+
+    Vec3f Model::position(int iface, int nthvert) {
+        return position(_faces_indices[iface][nthvert].p);
     }
 
-    Types::Vec2f Model::uv(int i) {
+    Vec2f Model::uv(int i) {
         return _uv_textures[i];
     }
-    Types::Vec2f Model::uv(int iface, int nthvert) {
-        return uv(_faces[iface][nthvert].t);
+
+    Vec2f Model::uv(int iface, int nthvert) {
+        return uv(_faces_indices[iface][nthvert].t);
     }
 
-    Types::Vec3f Model::normal(int i) {
+    Vec3f Model::normal(int i) {
         return _normals[i];
     }
-    Types::Vec3f Model::normal(int iface, int nthvert) {
-        return normal(_faces[iface][nthvert].n);
+
+    Vec3f Model::normal(int iface, int nthvert) {
+        return normal(_faces_indices[iface][nthvert].n);
     }
 
     TGAColor Model::diffuse_map(Vec2f uv) {

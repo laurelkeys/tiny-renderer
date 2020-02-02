@@ -20,13 +20,13 @@ int main(int argc, char **argv) {
     // model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
     using namespace std;
-    
+
     cout << endl;
     cout << "Model" << endl;
     model = new Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
     cout << "faces=" << model->nfaces() << endl;
     cout << "verts=" << model->nverts() << endl;
-    
+
     cout << endl;
     cout << "Obj::Model" << endl;
     obj_model = new Obj::Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
@@ -36,19 +36,20 @@ int main(int argc, char **argv) {
     cout << endl;
     for (int i = 0; i < model->nfaces(); i++) {
         std::vector<int> face = model->face(i);
+        Obj::FaceIndices obj_face_indices = obj_model->face_indices(i);
         Obj::Face obj_face = obj_model->face(i);
-        
-        for (int f = 0; f < static_cast<int>(face.size()); ++f) {
-            if (face[f] != obj_face[f].p)
-                cout << "(i=" << i << ") face[" << f << "] != obj_face[" << f << "].p" << endl;
 
-            Vec3f v = model->vert(face[f]);
-            Vec3f obj_v = obj_model->position(obj_face[f].p);
-            Obj::Vertex obj_vertex = obj_model->vertex(obj_face[f]);
-            if (v != obj_v)
-                cout << "(i=" << i << ") v != obj_v => " << v << "!=" << obj_v << endl;
-            if (v != obj_vertex.pos)
-                cout << "(i=" << i << ") v != obj_vertex.pos => " << v << "!=" << obj_vertex.pos << endl;
+        for (int v = 0; v < static_cast<int>(face.size()); ++v) {
+            if (face[v] != obj_face_indices[v].p)
+                cout << "(i=" << i << ") face[" << v << "] != obj_face_indices[" << v << "].p" << endl;
+
+            Obj::Vertex obj_vert = obj_model->vertex(i, v);
+
+            Vec3f vert = model->vert(face[v]);
+            if (vert != obj_face[v].pos)
+                cout << "(i=" << i << ") vert != obj_face[v].pos => " << vert << "!=" << obj_face[v].pos << endl;
+            if (vert != obj_vert.pos)
+                cout << "(i=" << i << ") vert != obj_vert.pos => " << vert << "!=" << obj_vert.pos << endl;
         }
 
     }
@@ -82,13 +83,13 @@ int main(int argc, char **argv) {
     //         world_coords[2] - world_coords[0], // use the cross product of two segments
     //         world_coords[1] - world_coords[0]  // of the triangle to compute a face normal
     //     ).normalize();
-    
+
     //     float intensity = n.dot(light_direction);
     //     // intensity < 0 means the light is coming from behind the polygon,
     //     // so we ignore it (obs.: this is called back-face culling)
     //     if (intensity > 0) {
     //         Draw::triangle(
-    //             screen_coords[0], screen_coords[1], screen_coords[2], 
+    //             screen_coords[0], screen_coords[1], screen_coords[2],
     //             z_buffer, image, TGAColor(intensity * 255, intensity * 255, intensity * 255)
     //         );
     //     }
