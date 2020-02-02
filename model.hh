@@ -36,4 +36,5 @@ class Model {
         float specular(Types::Vec2f uv);
         std::vector<int> face(int idx);
 };
+
 #endif //__MODEL_H__
