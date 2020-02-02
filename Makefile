@@ -1,6 +1,6 @@
 SYSCONF_LINK = g++
-CPPFLAGS     = -MD -Wall -Wextra -Weffc++ -std=c++14
-LDFLAGS      = -O3
+CPPFLAGS     = -g -MD -Wall -Wextra -Wcast-align -Wno-unused-parameter -std=c++14
+LDFLAGS      = -Wall
 LIBS         = -lm
 
 DESTDIR = ./
@@ -12,10 +12,10 @@ DEPS=$(OBJECTS:.o=.d)
 all: $(DESTDIR)$(TARGET)
 
 $(DESTDIR)$(TARGET): $(OBJECTS)
-	$(SYSCONF_LINK) -Wall $(LDFLAGS) -o $(DESTDIR)$(TARGET) $(OBJECTS) $(LIBS)
+	$(SYSCONF_LINK) $(LDFLAGS) -o $(DESTDIR)$(TARGET) $(OBJECTS) $(LIBS)
 
 $(OBJECTS): %.o: %.cc
-	$(SYSCONF_LINK) -Wall $(CPPFLAGS) -c $(CFLAGS) $< -o $@
+	$(SYSCONF_LINK) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	-rm -f $(OBJECTS)

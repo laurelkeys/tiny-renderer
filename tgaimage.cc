@@ -154,9 +154,7 @@ bool TGAImage::load_rle_data(std::ifstream &in) {
 bool TGAImage::write_tga_file(const char *filename, bool rle) {
     unsigned char developer_area_ref[4] = { 0, 0, 0, 0 };
     unsigned char extension_area_ref[4] = { 0, 0, 0, 0 };
-    unsigned char footer[18] = { 'T', 'R', 'U', 'E', 
-								 'V', 'I', 'S', 'I', 'O', 'N', '-', 
-								 'X', 'F', 'I', 'L', 'E', '.', '\0' };
+    unsigned char footer[18] = { 'T', 'R', 'U', 'E', 'V', 'I', 'S', 'I', 'O', 'N', '-', 'X', 'F', 'I', 'L', 'E', '.', '\0' };
     std::ofstream out;
     out.open(filename, std::ios::binary);
     if (!out.is_open()) {
@@ -256,7 +254,7 @@ bool TGAImage::unload_rle_data(std::ofstream &out) {
     return true;
 }
 
-TGAColor TGAImage::get(int x, int y) {
+TGAColor TGAImage::get(int x, int y) const {
     if (!data || x < 0 || y < 0 || x >= width || y >= height) {
         return TGAColor();
     }
@@ -283,11 +281,11 @@ int TGAImage::get_bytespp() {
     return bytespp;
 }
 
-int TGAImage::get_width() {
+int TGAImage::get_width() const {
     return width;
 }
 
-int TGAImage::get_height() {
+int TGAImage::get_height() const {
     return height;
 }
 
