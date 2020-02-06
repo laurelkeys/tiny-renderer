@@ -649,6 +649,17 @@ namespace Types {
             _m[4 * 2 + j] = v.z;
         }
 
+        // i-th row, j-th column, starting at 0 (ending at 3)
+        float cell(unsigned int i, unsigned int j) const {
+            assert(i < 4 && j < 4);
+            return _m[4 * i + j];
+        }
+
+        void set_cell(unsigned int i, unsigned int j, float a) {
+            assert(i < 4 && j < 4);
+            _m[4 * i + j] = a;
+        }
+
         /// arithmetic (matrix x scalar) //////////////////////
 
         Mat4f operator*(float a) const {

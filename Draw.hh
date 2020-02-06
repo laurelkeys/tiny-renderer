@@ -34,7 +34,7 @@ namespace Draw {
 
     void triangle(
         TriangleProps<Types::Vec3i> pos, TriangleProps<Types::Vec2f> uv,
-        int z_buffer[], TGAImage &image, Obj::Model *model
+        float intensity, int z_buffer[], TGAImage &image, Obj::Model *model
     );
 }
 

@@ -110,4 +110,13 @@ namespace Transform {
              0 ,  0 ,  0 ,       1
         );
     }
+
+    Mat4f projection(float c) {
+        return Mat4f(
+            1, 0,   0 , 0,
+            0, 1,   0 , 0,
+            0, 0,   1 , 0,
+            0, 0, -1/c, 1
+        );
+    }
 }

@@ -15,6 +15,15 @@ using Geometry::Triangle2D;
 
 namespace Draw {
 
+    static TGAColor operator*(float a, const TGAColor &color) {
+        return TGAColor(
+            a * color.bgra[2], // R
+            a * color.bgra[1], // G
+            a * color.bgra[0], // B
+            color.bgra[3]      // A
+        );
+    }
+
     void point(Vec2i at,
                TGAImage &image, const TGAColor &color) {
         image.set(at.x, at.y, color);
@@ -69,7 +78,7 @@ namespace Draw {
         }
     }
 
-    void triangle(TriangleProps<Vec3i> pos, TriangleProps<Vec2f> uv,
+    void triangle(TriangleProps<Vec3i> pos, TriangleProps<Vec2f> uv, float intensity,
                   int z_buffer[], TGAImage &image, Obj::Model *model) {
         const Vec2i bbox_min = Vec2i(
             std::max(0, Math::min(pos.a.x, pos.b.x, pos.c.x)),
@@ -103,7 +112,7 @@ namespace Draw {
                             )
                         )
                     );
-                    image.set(p.x, p.y, color);
+                    image.set(p.x, p.y, intensity * color);
                 }
             }
         }
