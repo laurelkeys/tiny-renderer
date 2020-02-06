@@ -5,14 +5,20 @@
 
 namespace Transform {
 
-    static Types::Mat4f translate(const Types::Vec3f &v);
-    
-    static Types::Mat4f scale(const Types::Vec3f &v);
-    
-    static Types::Mat4f rotate(float angle_deg, const Types::Vec3f &axis);
-    static Types::Mat4f rotate_x(float angle_deg);
-    static Types::Mat4f rotate_y(float angle_deg);
-    static Types::Mat4f rotate_z(float angle_deg);
+    Types::Mat4f translate(const Types::Vec3f &v);
+
+    Types::Mat4f scale(const Types::Vec3f &v);
+    Types::Mat4f scale(float a); // scale(Vec3f(a, a, a))
+
+    Types::Mat4f rotate(float angle_deg, const Types::Vec3f &axis);
+    Types::Mat4f rotate_x(float angle_deg);
+    Types::Mat4f rotate_y(float angle_deg);
+    Types::Mat4f rotate_z(float angle_deg);
+
+    Types::Mat4f viewport(int leftmost_x, int bottommost_y, int width, int height);
+    Types::Mat4f viewport(int width, int height); // viewport(0, 0, width, height)
+
+    Types::Mat4f look_at(const Types::Vec3f &eye, const Types::Vec3f &target, const Types::Vec3f &up);
 }
 
 #endif // __TRASNSFORM_HH__
