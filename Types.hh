@@ -501,14 +501,8 @@ namespace Types {
             return *this;
         }
 
-        Vec3<T> xyz(bool homogenized) const {
-            if (homogenized) {
-                assert(w != T(0));
-                T inv_w = T(1) / w;
-                return Vec3<T>(x, y, z) * inv_w;
-            } else {
-                return Vec3<T>(x, y, z);
-            }
+        Vec3<T> xyz() const {
+            return Vec3<T>(x, y, z);
         }
     };
 

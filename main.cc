@@ -47,7 +47,9 @@ int main(int argc, char **argv) {
             Vec3f v = face[j].pos; // position of the j-th face vertex
             world_coords[j] = v; // normalized device coordinates (i.e. [-1, 1] range)
             // apply transformations and map NDC to [0, width] x [0, height] x [0, 1]
-            screen_coords[j] = Vec3i((viewport * projection * Vec4f(v, 1)).xyz(1));
+            screen_coords[j] = Vec3i((
+                viewport * projection * Vec4f(v, 1)
+            ).homogenize().xyz());
             uv_coords[j] = face[j].uv; // uv texture coordinates (-1..1)
         }
 
@@ -71,6 +73,6 @@ int main(int argc, char **argv) {
     image.write_tga_file("output.tga");
 
     delete model;
-    // delete[] z_buffer;
+    delete[] z_buffer;
     return 0;
 }
