@@ -53,8 +53,7 @@ int main(int argc, char **argv) {
         // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {
             Draw::triangle(
-                screen_coords[0], screen_coords[1], screen_coords[2],
-                uv_coords[0], uv_coords[1], uv_coords[2],
+                screen_coords, uv_coords,
                 z_buffer, image, model
             );
         }

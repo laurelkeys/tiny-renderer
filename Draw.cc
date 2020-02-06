@@ -69,9 +69,11 @@ namespace Draw {
         }
     }
 
-    void triangle(Vec3i a, Vec3i b, Vec3i c,
-                  Vec2f a_uv, Vec2f b_uv, Vec2f c_uv,
+    void triangle(TriangleProps<Vec3i> pos, TriangleProps<Vec2f> uv,
                   int z_buffer[], TGAImage &image, Obj::Model *model) {
+        auto& [a, b, c] = pos;
+        auto& [a_uv, b_uv, c_uv] = uv;
+
         const Vec2i bbox_min = Vec2i(
             std::max(0, Math::min(a.x, b.x, c.x)),
             std::max(0, Math::min(a.y, b.y, c.y))
@@ -98,7 +100,7 @@ namespace Draw {
 
                     TGAColor color = model->diffuse_map_at(
                         Geometry::barycentric_interp(
-                            coords, 
+                            coords,
                             Geometry::Triangle2D<float>(
                                 a_uv, b_uv, c_uv
                             )
