@@ -15,6 +15,15 @@ using Geometry::Triangle2D;
 
 namespace Draw {
 
+    static TGAColor operator*(float a, const TGAColor &color) {
+        return TGAColor(
+            a * color.bgra[2], // R
+            a * color.bgra[1], // G
+            a * color.bgra[0], // B
+            color.bgra[3]      // A
+        );
+    }
+
     void point(Vec2i at,
                TGAImage &image, const TGAColor &color) {
         image.set(at.x, at.y, color);
@@ -69,25 +78,24 @@ namespace Draw {
         }
     }
 
-    void triangle(Vec3i a, Vec3i b, Vec3i c,
-                  Vec2f a_uv, Vec2f b_uv, Vec2f c_uv,
+    void triangle(TriangleProps<Vec3i> pos, TriangleProps<Vec2f> uv, float intensity,
                   int z_buffer[], TGAImage &image, Obj::Model *model) {
         const Vec2i bbox_min = Vec2i(
-            std::max(0, Math::min(a.x, b.x, c.x)),
-            std::max(0, Math::min(a.y, b.y, c.y))
+            std::max(0, Math::min(pos.a.x, pos.b.x, pos.c.x)),
+            std::max(0, Math::min(pos.a.y, pos.b.y, pos.c.y))
         ); // max({0, 0}, min(a, b, c))
 
         const Vec2i bbox_max = Vec2i(
-            std::min(Math::max(a.x, b.x, c.x), image.get_width() - 1),
-            std::min(Math::max(a.y, b.y, c.y), image.get_height() - 1)
+            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1),
+            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1)
         ); // min(max(a, b, c), {width, height})
 
-        const Vec3f vertex_depths(a.z, b.z, c.z);
+        const Vec3f vertex_depths(pos.a.z, pos.b.z, pos.c.z);
 
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Triangle2D<int>(a.xy(), b.xy(), c.xy()).barycentric_coords(p);
+                Vec3f coords = Triangle2D<int>(pos.a.xy(), pos.b.xy(), pos.c.xy()).barycentric_coords(p);
 
                 if (coords.x < 0 || coords.y < 0 || coords.z < 0)
                     continue; // point lies outside the triangle
@@ -98,13 +106,13 @@ namespace Draw {
 
                     TGAColor color = model->diffuse_map_at(
                         Geometry::barycentric_interp(
-                            coords, 
+                            coords,
                             Geometry::Triangle2D<float>(
-                                a_uv, b_uv, c_uv
+                                uv.a, uv.b, uv.c
                             )
                         )
                     );
-                    image.set(p.x, p.y, color);
+                    image.set(p.x, p.y, intensity * color);
                 }
             }
         }

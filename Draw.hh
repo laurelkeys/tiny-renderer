@@ -23,10 +23,18 @@ namespace Draw {
     //     int z_buffer[], TGAImage &image, const TGAColor &color
     // );
 
+    template <typename T>
+    struct TriangleProps {
+        T a, b, c;
+        TriangleProps(T props[3])
+            : a(props[0])
+            , b(props[1])
+            , c(props[2]) { }
+    };
+
     void triangle(
-        Types::Vec3i a, Types::Vec3i b, Types::Vec3i c,
-        Types::Vec2f a_uv, Types::Vec2f b_uv, Types::Vec2f c_uv,
-        int z_buffer[], TGAImage &image, Obj::Model *model
+        TriangleProps<Types::Vec3i> pos, TriangleProps<Types::Vec2f> uv,
+        float intensity, int z_buffer[], TGAImage &image, Obj::Model *model
     );
 }
 

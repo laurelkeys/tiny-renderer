@@ -177,29 +177,29 @@ namespace Obj {
 
     TGAColor Model::diffuse_map_at(Vec2f uv) const {
         Vec2i UV(
-            uv.x * _diffuse_map.get_width(), // map [-1, 1] to [-width, width]
-            uv.y * _diffuse_map.get_height() // map [-1, 1] to [-height, height]
+            uv.x * _diffuse_map.get_width(), // [-1, 1] -> [-width, width]
+            uv.y * _diffuse_map.get_height() // [-1, 1] -> [-height, height]
         );
         return _diffuse_map.get(UV.x, UV.y);
     }
 
     Vec3f Model::normal_map_at(Vec2f uv) const {
         Vec2i UV(
-            uv.x * _normal_map.get_width(), // map [-1, 1] to [-width, width]
-            uv.y * _normal_map.get_height() // map [-1, 1] to [-height, height]
+            uv.x * _normal_map.get_width(), // [-1, 1] -> [-width, width]
+            uv.y * _normal_map.get_height() // [-1, 1] -> [-height, height]
         );
         TGAColor c = _normal_map.get(UV.x, UV.y); // BGRA
         return Vec3f(
             static_cast<float>(c[2]) / 255.f * 2.f - 1.f, // R
             static_cast<float>(c[1]) / 255.f * 2.f - 1.f, // G
             static_cast<float>(c[0]) / 255.f * 2.f - 1.f  // B
-        ); // map [0, 255] to [-1, 1]
+        ); // [0, 255] -> [-1, 1]
     }
 
     float Model::specular_map_at(Vec2f uv) const {
         Vec2i UV(
-            uv.x * _specular_map.get_width(), // map [-1, 1] to [-width, width]
-            uv.y * _specular_map.get_height() // map [-1, 1] to [-height, height]
+            uv.x * _specular_map.get_width(), // [-1, 1] -> [-width, width]
+            uv.y * _specular_map.get_height() // [-1, 1] -> [-height, height]
         );
         return static_cast<float>(_specular_map.get(UV.x, UV.y)[0]); // B channel
     }

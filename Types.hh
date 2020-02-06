@@ -370,6 +370,12 @@ namespace Types {
             , z(a)
             , w(a) { }
 
+        explicit Vec4(const Vec3<T> &v, T w)
+            : x(v.x)
+            , y(v.y)
+            , z(v.z)
+            , w(w) { }
+
         template <typename OtherT>
         explicit Vec4(const Vec4<OtherT> &v)
             : x(T(v.x))
@@ -493,6 +499,16 @@ namespace Types {
             z *= inv_w;
             w = T(1); // w *= inv_w;
             return *this;
+        }
+
+        Vec3<T> xyz(bool homogenized) const {
+            if (homogenized) {
+                assert(w != T(0));
+                T inv_w = T(1) / w;
+                return Vec3<T>(x, y, z) * inv_w;
+            } else {
+                return Vec3<T>(x, y, z);
+            }
         }
     };
 
@@ -631,6 +647,17 @@ namespace Types {
             _m[4 * 0 + j] = v.x;
             _m[4 * 1 + j] = v.y;
             _m[4 * 2 + j] = v.z;
+        }
+
+        // i-th row, j-th column, starting at 0 (ending at 3)
+        float cell(unsigned int i, unsigned int j) const {
+            assert(i < 4 && j < 4);
+            return _m[4 * i + j];
+        }
+
+        void set_cell(unsigned int i, unsigned int j, float a) {
+            assert(i < 4 && j < 4);
+            _m[4 * i + j] = a;
         }
 
         /// arithmetic (matrix x scalar) //////////////////////

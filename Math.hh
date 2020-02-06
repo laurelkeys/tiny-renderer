@@ -27,6 +27,10 @@ namespace Math {
     /// common functions //////////////////////////////////
     ///////////////////////////////////////////////////////
 
+    float deg2rad(float angle_deg);
+
+    float rad2deg(float angle_rad);
+
     template <typename T>
     T min(const T &a, const T &b) {
         return a < b ? a : b;
