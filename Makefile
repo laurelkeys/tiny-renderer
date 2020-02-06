@@ -1,5 +1,5 @@
 SYSCONF_LINK = g++
-CPPFLAGS     = -g -MD -Wall -Wextra -Wcast-align -Wno-unused-parameter -std=c++17
+CPPFLAGS     = -g -MD -Wall -Wextra -Wcast-align -Wno-unused-parameter -std=c++14
 LDFLAGS      = -Wall
 LIBS         = -lm
 
