@@ -77,6 +77,15 @@ namespace Math {
         return t * t * (T(3) - T(2) * t); // evaluate polynomial
     }
 
+    // Perform smooth(er) (quintic Hermite) interpolation between 0 and 1 when min_val < val < max_val, 
+    // using a function that has zero 1st and 2nd-order derivatives at val = min_val and val = max_val
+    template <typename T>
+    T smootherstep(T min_val, T max_val, T val) {
+        // scale, bias and saturate val to 0..1 range
+        T t = saturate((val - min_val) / (max_val - min_val));
+        return t * t * t * (t * (t * T(6) - T(15)) + T(10)); // evaluate polynomial
+    }
+
     // Linearly interpolate between start and end using ratio to weight between them
     template <typename T>
     inline T lerp(T start, T end, T ratio) {
