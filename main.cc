@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     
     Vec3f light_direction(0, 0, -1);
     
-    Vec3f eye(0, 0, 3); // (0, 0, c)
+    Vec3f eye(0, 0, 5); // (0, 0, c)
     Mat4f projection = Transform::projection(eye.z);
     
     Mat4f viewport = Transform::viewport(

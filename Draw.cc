@@ -11,8 +11,6 @@ using Types::Vec3i;
 using Types::Vec2f;
 using Types::Vec3f;
 
-using Geometry::Triangle2D;
-
 namespace Draw {
 
     static TGAColor operator*(float a, const TGAColor &color) {
@@ -95,7 +93,7 @@ namespace Draw {
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Triangle2D<int>(pos.a.xy(), pos.b.xy(), pos.c.xy()).barycentric_coords(p);
+                Vec3f coords = Geometry::barycentric_coords(p, pos.a.xy(), pos.b.xy(), pos.c.xy());
 
                 if (coords.x < 0 || coords.y < 0 || coords.z < 0)
                     continue; // point lies outside the triangle
@@ -107,9 +105,7 @@ namespace Draw {
                     TGAColor color = model->diffuse_map_at(
                         Geometry::barycentric_interp(
                             coords,
-                            Geometry::Triangle2D<float>(
-                                uv.a, uv.b, uv.c
-                            )
+                            uv.a, uv.b, uv.c
                         )
                     );
                     image.set(p.x, p.y, intensity * color);
