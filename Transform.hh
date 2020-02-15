@@ -23,7 +23,6 @@ namespace Transform {
 
     // Types::Mat4f perspective(float vfov_deg, float aspect_ratio, float near, float far);
     Types::Mat4f projection(float c); // obs.: assumes a camera at (0, 0, c)
-    Types::Mat4f projection(const Types::Vec3f &eye, const Types::Vec3f &target);
 }
 
 #endif // __TRASNSFORM_HH__

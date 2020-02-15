@@ -113,4 +113,41 @@ namespace Draw {
             }
         }
     }
+
+    void triangle(TriangleProps<Types::Vec3i> pos, Shader &shader,
+                  int z_buffer[], TGAImage &image, Obj::Model *model) {
+        const Vec2i bbox_min = Vec2i(
+            std::max(0, Math::min(pos.a.x, pos.b.x, pos.c.x)),
+            std::max(0, Math::min(pos.a.y, pos.b.y, pos.c.y))
+        ); // max({0, 0}, min(a, b, c))
+
+        const Vec2i bbox_max = Vec2i(
+            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1),
+            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1)
+        ); // min(max(a, b, c), {width, height})
+
+        const Vec3f vertex_depths(pos.a.z, pos.b.z, pos.c.z);
+
+        Vec2i p;
+        for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
+            for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
+                Vec3f coords = Geometry::barycentric_coords(
+                    p, pos.a.xy(), pos.b.xy(), pos.c.xy()
+                ); // screen coordinates of point p
+
+                if (coords.x < 0 || coords.y < 0 || coords.z < 0)
+                    continue; // point lies outside the triangle
+
+                float pz = Geometry::barycentric_interp(coords, vertex_depths);
+                if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
+                    TGAColor color;
+                    bool discard = shader.fragment(coords, color);
+                    if (!discard) {
+                        z_buffer[int(p.x + p.y * image.get_width())] = pz;
+                        image.set(p.x, p.y, color);
+                    }
+                }
+            }
+        }
+    }
 }

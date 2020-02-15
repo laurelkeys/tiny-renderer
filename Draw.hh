@@ -5,6 +5,7 @@
 
 #include "Obj.hh"
 #include "Types.hh"
+#include "Shader.hh"
 
 namespace Draw {
 
@@ -35,6 +36,11 @@ namespace Draw {
     void triangle(
         TriangleProps<Types::Vec3i> pos, TriangleProps<Types::Vec2f> uv,
         float intensity, int z_buffer[], TGAImage &image, Obj::Model *model
+    );
+
+    void triangle(
+        TriangleProps<Types::Vec3i> pos, Shader &shader,
+        int z_buffer[], TGAImage &image, Obj::Model *model
     );
 }
 

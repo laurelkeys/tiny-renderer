@@ -127,8 +127,4 @@ namespace Transform {
             0, 0, -1/c, 1
         );
     }
-
-    Mat4f projection(const Vec3f &eye, const Vec3f &target) {
-        return projection((eye - target).length());
-    }
 }
