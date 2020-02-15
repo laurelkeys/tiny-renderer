@@ -33,9 +33,7 @@ namespace Types {
             , y(a) { }
 
         template <typename OtherT>
-        explicit Vec2(const Vec2<OtherT> &v)
-            : x(T(v.x))
-            , y(T(v.y)) { }
+        Vec2(const Vec2<OtherT> &v);
 
         /// indexing //////////////////////////////////////////
 
@@ -187,10 +185,7 @@ namespace Types {
             , z(a) { }
 
         template <typename OtherT>
-        explicit Vec3(const Vec3<OtherT> &v)
-            : x(T(v.x))
-            , y(T(v.y))
-            , z(T(v.z)) { }
+        Vec3(const Vec3<OtherT> &v);
 
         /// indexing //////////////////////////////////////////
 
@@ -377,11 +372,7 @@ namespace Types {
             , w(w) { }
 
         template <typename OtherT>
-        explicit Vec4(const Vec4<OtherT> &v)
-            : x(T(v.x))
-            , y(T(v.y))
-            , z(T(v.z))
-            , w(T(v.w)) { }
+        Vec4(const Vec4<OtherT> &v);
 
         /// indexing //////////////////////////////////////////
 

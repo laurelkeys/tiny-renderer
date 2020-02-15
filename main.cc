@@ -19,37 +19,40 @@ using Types::Mat4f;
 
 Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
+
 int main(int argc, char **argv) {
     model = new Obj::Model(argc >= 2 ? argv[1] : "obj/african_head/african_head.obj");
 
     int *z_buffer = new int[resolution.x * resolution.y];
-    std::fill_n(z_buffer, resolution.x * resolution.y, Math::MIN_INT);
+    for (int i = 0; i < resolution.x * resolution.y; ++i) {
+        z_buffer[i] = Math::MIN_INT;
+    }
 
     TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
-    
+
     Vec3f light_direction(0, 0, -1);
-    
-    Vec3f eye(0, 0, 5); // (0, 0, c)
+    Vec3f eye(0, 0, 3); // (0, 0, c)
+
     Mat4f projection = Transform::projection(eye.z);
-    
     Mat4f viewport = Transform::viewport(
         resolution.x * 0.125, resolution.y * 0.125, // 1 / 8
         resolution.x * 0.750, resolution.y * 0.750  // 3 / 4
     );
 
-    for (int i = 0; i < model->n_of_faces(); i++) {
+    for (int i = 0; i < model->n_of_faces(); ++i) {
         Primitives::Face face = model->face(i);
 
+        Vec2f uv_coords[3];
         Vec3f world_coords[3];
         Vec3i screen_coords[3];
-        Vec2f uv_coords[3];
-        for (int j = 0; j < 3; j++) {
+        for (int j = 0; j < 3; ++j) {
             Vec3f v = face[j].pos; // position of the j-th face vertex
             world_coords[j] = v; // normalized device coordinates (i.e. [-1, 1] range)
-            // apply transformations and map NDC to [0, width] x [0, height] x [0, 1]
+            // apply transformations and map NDC to [0, width] x [0, height] x [0, 255]
             screen_coords[j] = Vec3i((
-                viewport * projection * Vec4f(v, 1)
+               viewport * projection * Vec4f(v, 1)
             ).homogenize().xyz());
+
             uv_coords[j] = face[j].uv; // uv texture coordinates (-1..1)
         }
 

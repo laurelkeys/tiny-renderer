@@ -84,19 +84,25 @@ namespace Transform {
         );
     }
 
-    Mat4f viewport(int leftmost_x, int bottommost_y, int width, int height) {
-        float w = 0.5f * width, h = 0.5f * height, d = 0.5f;
-        // map normalized device coordinates to screen coordinates:
+    Mat4f viewport(int min_x, int min_y, int width, int height,
+                   int near, int far) {
+        float w = 0.5f * width;
+        float h = 0.5f * height;
+        float d = 0.5f * (far - near); // 0.5f * depth
         return Mat4f(
-            w, 0, 0, w + leftmost_x,   // [-1, 1] -> [lm_x, width]
-            0, h, 0, h + bottommost_y, // [-1, 1] -> [bm_y, height]
-            0, 0, d, d,                // [-1, 1] -> [0, 1]
+            w, 0, 0, w + min_x, // [-1, 1] -> [min_x, min_x + width]
+            0, h, 0, h + min_y, // [-1, 1] -> [min_y, min_y + height]
+            0, 0, d, d + near,  // [-1, 1] -> [near, far]
             0, 0, 0, 1
         );
     }
 
-    Mat4f viewport(int width, int height) {
-        return viewport(0, 0, width, height);
+    Mat4f viewport(int width, int height, int depth) {
+        // map normalized device coordinates to screen coordinates:
+        //  x ∈ [-1, 1] -> [0, width]
+        //  y ∈ [-1, 1] -> [0, height]
+        //  z ∈ [-1, 1] -> [0, depth]
+        return viewport(0, 0, width, height, 0, depth);
     }
 
     Mat4f look_at(const Vec3f &eye, const Vec3f &target, const Vec3f &up) {
@@ -118,5 +124,9 @@ namespace Transform {
             0, 0,   1 , 0,
             0, 0, -1/c, 1
         );
+    }
+
+    Mat4f projection(Vec3f eye, Vec3f target) {
+        return projection((eye - target).length());
     }
 }

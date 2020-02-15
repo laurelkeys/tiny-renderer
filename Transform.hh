@@ -15,13 +15,15 @@ namespace Transform {
     Types::Mat4f rotate_y(float angle_deg);
     Types::Mat4f rotate_z(float angle_deg);
 
-    Types::Mat4f viewport(int leftmost_x, int bottommost_y, int width, int height);
-    Types::Mat4f viewport(int width, int height); // viewport(0, 0, width, height)
+    Types::Mat4f viewport(int min_x, int min_y, int width, int height,
+                          int near = 0, int far = 255);
+    Types::Mat4f viewport(int width, int height, int depth = 255); // viewport(0, 0, width, height, 0, depth)
 
     Types::Mat4f look_at(const Types::Vec3f &eye, const Types::Vec3f &target, const Types::Vec3f &up);
-    
+
     // Types::Mat4f perspective(float vfov_deg, float aspect_ratio, float near, float far);
     Types::Mat4f projection(float c); // obs.: assumes a camera at (0, 0, c)
+    Types::Mat4f projection(Types::Vec3f eye, Types::Vec3f target);
 }
 
 #endif // __TRASNSFORM_HH__

@@ -2,6 +2,7 @@
 .clang-format
 /*.tga
 /*.png
+model.*
 
 # VS Code
 .vscode
