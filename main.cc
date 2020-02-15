@@ -32,12 +32,25 @@ int main(int argc, char **argv) {
 
     Vec3f light_direction(0, 0, -1);
     Vec3f eye(0, 0, 3); // (0, 0, c)
+    Vec3f center(0, 0, 0);
 
-    Mat4f projection = Transform::projection(eye.z);
+    Mat4f model_view = Transform::look_at(eye, center, Vec3f(0, 1, 0));
+    Mat4f projection = Transform::projection(eye, center);
     Mat4f viewport = Transform::viewport(
         resolution.x * 0.125, resolution.y * 0.125, // 1 / 8
         resolution.x * 0.750, resolution.y * 0.750  // 3 / 4
     );
+
+    std::cerr << "\nmodel_view:" << std::endl;
+    std::cerr << model_view << std::endl;
+    std::cerr << "projection:" << std::endl;
+    std::cerr << projection << std::endl;
+    std::cerr << "viewport:" << std::endl;
+    std::cerr << viewport << std::endl;
+    std::cerr << "projection * model_view:" << std::endl;
+    std::cerr << projection * model_view << std::endl;
+    std::cerr << "viewport * projection * model_view:" << std::endl;
+    std::cerr << viewport * projection * model_view << std::endl;
 
     for (int i = 0; i < model->n_of_faces(); ++i) {
         Primitives::Face face = model->face(i);
@@ -61,7 +74,7 @@ int main(int argc, char **argv) {
             world_coords[1] - world_coords[0]  // of the triangle to compute a face normal
         ).normalize();
 
-        float intensity = n.dot(light_direction);
+        float intensity = dot(n, light_direction);
         // intensity < 0 means the light is coming from behind the polygon,
         // so we ignore it (obs.: this is called back-face culling)
         if (intensity > 0) {

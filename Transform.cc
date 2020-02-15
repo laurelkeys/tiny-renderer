@@ -92,7 +92,7 @@ namespace Transform {
         return Mat4f(
             w, 0, 0, w + min_x, // [-1, 1] -> [min_x, min_x + width]
             0, h, 0, h + min_y, // [-1, 1] -> [min_y, min_y + height]
-            0, 0, d, d + near,  // [-1, 1] -> [near, far]
+            0, 0, d, d + near,  // [-1, 1] -> [near, far] (usually the z-buffer "resolution")
             0, 0, 0, 1
         );
     }
@@ -108,13 +108,15 @@ namespace Transform {
     Mat4f look_at(const Vec3f &eye, const Vec3f &target, const Vec3f &up) {
         Vec3f z = (eye - target).normalize(); //  y |
         Vec3f x = cross(up, z).normalize();   //    o —— x
-        Vec3f y = cross(z, x);                // z /
+        Vec3f y = cross(z, x).normalize();    // z /
+        // FIXME check if the translation should be done 
+        // with respect to the target, and not the eye (?)
         return Mat4f(
             x.x, x.y, x.z, -dot(x, eye),
             y.x, y.y, y.z, -dot(y, eye),
             z.x, z.y, z.z, -dot(z, eye),
              0 ,  0 ,  0 ,       1
-        );
+        ); // ModelView matrix
     }
 
     Mat4f projection(float c) {
@@ -126,7 +128,7 @@ namespace Transform {
         );
     }
 
-    Mat4f projection(Vec3f eye, Vec3f target) {
+    Mat4f projection(const Vec3f &eye, const Vec3f &target) {
         return projection((eye - target).length());
     }
 }
