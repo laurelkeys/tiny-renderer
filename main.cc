@@ -26,17 +26,14 @@ using Types::Mat4f;
 Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
 
-const Vec3f light_direction(0, 0, -1); // versor
+const Vec3f light_direction = Vec3f(2, 2, 1).normalize();
 const Vec3f up(0, 1, 0);
-const Vec3f eye(0, 0, 3); // (0, 0, c)
+const Vec3f eye(1, -1, 3); // (0, 0, c)
 const Vec3f center(0, 0, 0);
 
 const Mat4f model_view = Transform::look_at(eye, center, up);
 const Mat4f projection = Transform::projection((eye - center).length());
-const Mat4f viewport = Transform::viewport(
-    resolution.x * 0.125, resolution.y * 0.125, // 1 / 8
-    resolution.x * 0.750, resolution.y * 0.750  // 3 / 4
-);
+const Mat4f viewport = Transform::viewport(resolution.x, resolution.y);
 
 ///////////////////////////////////////////////////////
 /// shaders ///////////////////////////////////////////
