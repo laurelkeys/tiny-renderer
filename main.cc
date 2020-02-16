@@ -63,12 +63,15 @@ struct ShaderImpl : public Shader {
     virtual bool fragment(Vec3f bary, TGAColor &color) override {
         // interpolate intensity and uv for the current pixel
         float intensity = Geometry::barycentric_interp(bary, varying_intensity);
-        Vec3f vertices_us = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);
-        Vec3f vertices_vs = Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y);
+        /* FIXME */
+        /* Vec2f uv = matmul(varying_uv, bary) */
+        Vec3f vertices_u_coords = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);
+        Vec3f vertices_v_coords = Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y);
         Vec2f uv = Vec2f(
-            Geometry::barycentric_interp(bary, vertices_us),
-            Geometry::barycentric_interp(bary, vertices_vs)
+            Geometry::barycentric_interp(bary, vertices_u_coords),
+            Geometry::barycentric_interp(bary, vertices_v_coords)
         );
+        /* FIXME */
         
         color = model->diffuse_map_at(uv) * intensity;
         
