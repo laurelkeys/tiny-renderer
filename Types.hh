@@ -631,6 +631,8 @@ namespace Types {
 
         Mat4f transposed() const;
 
+        Mat4f inversed() const;
+
         friend std::ostream &operator<<(std::ostream &out, const Mat4f &m);
     };
 
