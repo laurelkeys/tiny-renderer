@@ -28,7 +28,7 @@ const Vec2i resolution(800, 800);
 
 const Vec3f light_direction = Vec3f(2, 2, 1).normalize();
 const Vec3f up(0, 1, 0);
-const Vec3f eye(1, -1, 3); // (0, 0, c)
+const Vec3f eye(1, 1, 2); // (0, 0, c)
 const Vec3f center(0, 0, 0);
 
 const Mat4f model_view = Transform::look_at(eye, center, up);
@@ -39,10 +39,14 @@ const Mat4f viewport = Transform::viewport(resolution.x, resolution.y);
 /// shaders ///////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
-struct GouraudShader : public Shader {
-    Vec3f varying_intensity; // written by vertex shader, read by fragment shader
+struct ShaderImpl : public Shader {
+    // varyings are written by vertex shader, read by fragment shader
+    Vec3f varying_intensity;
+    Vec2f varying_uv[3];
 
     virtual Vec4f vertex(int iface, int nthvert) override {
+        varying_uv[nthvert] = model->uv(iface, nthvert);
+        
         // get diffuse lighting intensity
         // obs.: use max(0, intensity), as negative values mean the light is behind
         float intensity = dot(model->normal(iface, nthvert), light_direction);
@@ -57,10 +61,17 @@ struct GouraudShader : public Shader {
     }
 
     virtual bool fragment(Vec3f bary, TGAColor &color) override {
-        // interpolate intensity for the current pixel
+        // interpolate intensity and uv for the current pixel
         float intensity = Geometry::barycentric_interp(bary, varying_intensity);
-        color = TGAColor(255, 255, 255) * intensity;
-
+        Vec3f vertices_us = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);
+        Vec3f vertices_vs = Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y);
+        Vec2f uv = Vec2f(
+            Geometry::barycentric_interp(bary, vertices_us),
+            Geometry::barycentric_interp(bary, vertices_vs)
+        );
+        
+        color = model->diffuse_map_at(uv) * intensity;
+        
         // return false to signal that we won't discard this pixel
         return false;
     }
@@ -79,7 +90,7 @@ int main(int argc, char **argv) {
         z_buffer[i] = Math::MIN_INT;
     }
 
-    GouraudShader shader;
+    ShaderImpl shader;
     for (int i = 0; i < model->n_of_faces(); ++i) {
         Vec3i screen_coords[3];
         for (int j = 0; j < 3; ++j) {
