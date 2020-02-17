@@ -18,6 +18,7 @@ using Types::Vec3f;
 
 using Types::Vec4f; // homogeneous coordinates (points with w=1, vectors with w=0)
 using Types::Mat4f;
+using Types::Mat3f;
 
 ///////////////////////////////////////////////////////
 /// scene /////////////////////////////////////////////
@@ -44,14 +45,18 @@ struct ShaderImpl : public Shader {
     // varyings are written by vertex shader, read by fragment shader
     Vec2f varying_uv[3];
     Vec3f varying_normal[3];
-    Vec4f varying_position[3];
+    Vec3f varying_position[3]; // vertices positions in NDC ([-1, 1])
+    Vec4f varying_screen_coord[3]; // vertices positions in screen space
 
     virtual Vec4f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
         varying_normal[nthvert] = model->normal(iface, nthvert);
-        varying_position[nthvert] = uniform_mvp * Vec4f(model->position(iface, nthvert), 1);
+        
+        varying_screen_coord[nthvert] = uniform_mvp * Vec4f(model->position(iface, nthvert), 1);
+        varying_position[nthvert] = varying_screen_coord[nthvert].homogenize().xyz();
+        
         // NDC's [-1, 1] range transformed to screen coordinates by the MVP matrix
-        return varying_position[nthvert];
+        return varying_screen_coord[nthvert];
     }
 
     virtual bool fragment(Vec3f bary, TGAColor &color) override {
@@ -71,10 +76,27 @@ struct ShaderImpl : public Shader {
             Geometry::barycentric_interp(bary, vertices_x_normal_coords),
             Geometry::barycentric_interp(bary, vertices_y_normal_coords),
             Geometry::barycentric_interp(bary, vertices_z_normal_coords)
-        );
+        ).normalize();
 
-        float intensity = dot(normal, light_direction);
+        Mat3f A;
+        A.set_row(0, varying_position[1] - varying_position[0]);
+        A.set_row(1, varying_position[2] - varying_position[0]);
+        A.set_row(2, normal);
 
+        Mat3f A_inv = A.inversed();
+
+        Vec3f i = A_inv * Vec3f(varying_uv[1].x - varying_uv[0].x, varying_uv[2].x - varying_uv[0].x, 0);
+        Vec3f j = A_inv * Vec3f(varying_uv[1].y - varying_uv[0].y, varying_uv[2].y - varying_uv[0].y, 0);
+
+        Mat3f B;
+        B.set_col(0, i.normalize());
+        B.set_col(1, j.normalize());
+        B.set_col(2, normal);
+
+        Vec3f n = (B * model->normal_map_at(uv)).normalize();
+        // Darboux basis = (i, j, n)
+
+        float intensity = dot(n, light_direction);
         float diff = std::max(0.0f, intensity); // the light is behind when values are negative
         color = model->diffuse_map_at(uv) * diff;
 

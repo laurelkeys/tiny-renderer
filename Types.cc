@@ -187,7 +187,7 @@ namespace Types {
 
     /// misc //////////////////////////////////////////////
 
-    inline float Mat4f::det3x3() const {
+    inline float Mat3f::det3x3() const {
         return (
               _11 * (_22 * _33 - _23 * _32)
             - _12 * (_21 * _33 - _23 * _31)
