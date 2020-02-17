@@ -237,7 +237,7 @@ namespace Types {
         );
     }
 
-    Mat4f Mat4f::transposed() const {
+    Mat4f Mat4f::inversed() const {
         // ref.: https://github.com/tunabrain/tungsten/blob/master/src/core/math/Mat4f.hpp
         
         Mat4f inv;

@@ -26,9 +26,9 @@ using Types::Mat4f;
 Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
 
-const Vec3f light_direction = Vec3f(2, 2, 1).normalize();
+const Vec3f light_direction = Vec3f(1, 1, 0).normalize();
 const Vec3f up(0, 1, 0);
-const Vec3f eye(1, 1, 2); // (0, 0, c)
+const Vec3f eye(1, 1, 4);
 const Vec3f center(0, 0, 0);
 
 const Mat4f model_view = Transform::look_at(eye, center, up);
@@ -40,29 +40,25 @@ const Mat4f viewport = Transform::viewport(resolution.x, resolution.y);
 ///////////////////////////////////////////////////////
 
 struct ShaderImpl : public Shader {
+    // uniforms are constant values passed to the shader
+    Mat4f uniform_mvp; // ModelViewProjection matrix
+    Mat4f uniform_mvp_inv_T; // (MVP^-1)^T, obs.: (A^-1)^T === (A^T)^-1
+
     // varyings are written by vertex shader, read by fragment shader
-    Vec3f varying_intensity;
     Vec2f varying_uv[3];
 
     virtual Vec4f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
-        
-        // get diffuse lighting intensity
-        // obs.: use max(0, intensity), as negative values mean the light is behind
-        float intensity = dot(model->normal(iface, nthvert), light_direction);
-        varying_intensity[nthvert] = intensity > 0 ? intensity : 0;
 
         // read the vertex position from the .obj model file
-        // obs.: they're in normalized device coordinates (NDC), i.e. [-1, 1] range
-        Vec4f vertex_coords = Vec4f(model->position(iface, nthvert), 1);
+        Vec4f vertex_coords = Vec4f(model->position(iface, nthvert), 1); // [-1, 1]
 
-        // transform it to screen coordinates
+        // transform NDC to screen coordinates
         return viewport * projection * model_view * vertex_coords;
     }
 
     virtual bool fragment(Vec3f bary, TGAColor &color) override {
-        // interpolate intensity and uv for the current pixel
-        float intensity = Geometry::barycentric_interp(bary, varying_intensity);
+        // interpolate uv for the current pixel
         /* FIXME */
         /* Vec2f uv = matmul(varying_uv, bary) */
         Vec3f vertices_u_coords = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);
@@ -72,9 +68,35 @@ struct ShaderImpl : public Shader {
             Geometry::barycentric_interp(bary, vertices_v_coords)
         );
         /* FIXME */
-        
+
+        Vec3f n = (
+            uniform_mvp_inv_T * Vec4f(model->normal_map_at(uv), 1)
+        ).xyz().normalize(); // NOTE after a transformation by an affine mapping,
+                             // normal vectors must be transformed with a mapping equal to
+                             // the transpose of the inverse of the original mapping matrix
+                             // ref.: http://www.songho.ca/opengl/gl_normaltransform.html
+
+        Vec3f l = (
+            uniform_mvp * Vec4f(light_direction, 1)
+        ).xyz().normalize();
+
+        /*
+        float intensity = -dot(n, l);
+        Vec3f r = ((2 * intensity) * n - l).normalize(); // reflected light
+        float spec = std::pow(std::max(0.0f, r.z), model->specular_map_at(uv));
+        float diff = std::max(0.0f, intensity);
+
+        TGAColor c = model->diffuse_map_at(uv);
+        color = c;
+        for (int i = 0; i < 3; ++i) {
+            color[i] = std::min(5 + c[i] * (diff + 0.6f * spec), 255.0f);
+        }*/
+
+        // FIXME using `-` since the normals are inverted
+        float intensity = std::max(0.0f, -dot(n, l)); // obs.: negative values mean the light is behind
+
         color = model->diffuse_map_at(uv) * intensity;
-        
+
         // return false to signal that we won't discard this pixel
         return false;
     }
@@ -94,6 +116,13 @@ int main(int argc, char **argv) {
     }
 
     ShaderImpl shader;
+    Mat4f mvp = projection * model_view;
+    shader.uniform_mvp = mvp;
+    shader.uniform_mvp_inv_T = mvp.inversed().transposed();
+
+    std::cerr << "\nMVP = \n" << shader.uniform_mvp << std::endl;
+    std::cerr << "MVP.inv.T = \n" << shader.uniform_mvp_inv_T << std::endl;
+
     for (int i = 0; i < model->n_of_faces(); ++i) {
         Vec3i screen_coords[3];
         for (int j = 0; j < 3; ++j) {
