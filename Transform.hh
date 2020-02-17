@@ -21,7 +21,7 @@ namespace Transform {
 
     Types::Mat4f look_at(const Types::Vec3f &eye, const Types::Vec3f &target, const Types::Vec3f &up);
 
-    // Types::Mat4f perspective(float vfov_deg, float aspect_ratio, float near, float far);
+    Types::Mat4f perspective(float vfov_deg, float aspect_ratio, float near, float far);
     Types::Mat4f projection(float c); // obs.: assumes a camera at (0, 0, c)
 }
 

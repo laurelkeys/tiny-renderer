@@ -32,7 +32,7 @@ namespace Transform {
     }
 
     Mat4f rotate(float angle_deg, const Vec3f &axis) {
-        // http://docs.gl/gl2/glRotate
+        // ref.: http://docs.gl/gl2/glRotate
 
         float angle_rad = Math::deg2rad(angle_deg);
         float c = std::cos(angle_rad);
@@ -109,7 +109,7 @@ namespace Transform {
         Vec3f z = (eye - target).normalize(); //  y |
         Vec3f x = cross(up, z).normalize();   //    o —— x
         Vec3f y = cross(z, x).normalize();    // z /
-        // FIXME check if the translation should be done 
+        // FIXME check if the translation should be done
         // with respect to the target, and not the eye (?)
         return Mat4f(
             x.x, x.y, x.z, -dot(x, eye),
@@ -117,6 +117,25 @@ namespace Transform {
             z.x, z.y, z.z, -dot(z, eye),
              0 ,  0 ,  0 ,       1
         ); // ModelView matrix
+    }
+
+    Mat4f perspective(float vfov_deg, float aspect_ratio, float near, float far) {
+        // ref.: http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+        float vfov_rad = Math::deg2rad(vfov_deg);
+        assert(vfov_rad > 0 && aspect_ratio > 0);
+
+        float depth = far - near;
+        assert(near >= 0 && far > 0 && depth > 0);
+
+        float y_div_z = std::tan(vfov_rad / 2);
+        float x_div_z = aspect_ratio * y_div_z;
+        return Mat4f(
+            1 / x_div_z,     0      ,         0        ,          0         ,
+                0      , 1 / y_div_z,         0        ,          0         ,
+                0      ,     0      , -(near+far)/depth, -(2*near*far)/depth,
+                0      ,     0      ,        -1        ,          0
+        );
     }
 
     Mat4f projection(float c) {

@@ -259,8 +259,7 @@ namespace Types {
         inv._m[15] =  _m[0]*_m[ 5]*_m[10] - _m[0]*_m[ 6]*_m[ 9] - _m[4]*_m[1]*_m[10] + _m[4]*_m[2]*_m[ 9] + _m[ 8]*_m[1]*_m[ 6] - _m[ 8]*_m[2]*_m[ 5];
 
         float det = _m[0]*inv._m[0] + _m[1]*inv._m[4] + _m[2]*inv._m[8] + _m[3]*inv._m[12];
-        if (det == 0.0f)
-            return Mat4f();
+        assert(det != 0.0f);
 
         return inv * (1 / det);
     }
