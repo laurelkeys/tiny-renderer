@@ -536,6 +536,103 @@ namespace Types {
     typedef Vec4<unsigned int> Vec4u;
 
     ///////////////////////////////////////////////////////
+    /// Mat3f /////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    struct Mat3f {
+        /// properties ////////////////////////////////////////
+
+        union {
+            struct {
+                float _11, _12, _13;
+                float _21, _22, _23;
+                float _31, _32, _33;
+            };
+            float _m[9];
+        };
+
+        /// constructors //////////////////////////////////////
+
+        // Creates an identity matrix
+        Mat3f();
+
+        Mat3f(float a11, float a12, float a13,
+              float a21, float a22, float a23,
+              float a31, float a32, float a33);
+
+        explicit Mat3f(float a);
+
+        Mat3f(const Mat3f &m);
+
+        /// indexing //////////////////////////////////////////
+
+        // i-th row, starting at 0 (ending at 2)
+        Vec3f row(unsigned int i) const;
+
+        void set_row(unsigned int i, const Vec3f &v);
+
+        // j-th column, starting at 0 (ending at 2)
+        Vec3f col(unsigned int j) const;
+
+        void set_col(unsigned int j, const Vec3f &v);
+
+        // i-th row, j-th column, starting at 0 (ending at 2)
+        float cell(unsigned int i, unsigned int j) const;
+
+        void set_cell(unsigned int i, unsigned int j, float a);
+
+        /// arithmetic (matrix x scalar) //////////////////////
+
+        Mat3f operator*(float a) const;
+
+        Mat3f &operator*=(float a);
+
+        /// arithmetic (matrix x vector) //////////////////////
+
+        Vec3f operator*(const Vec3f &v) const;
+
+        /// arithmetic (matrix x matrix) //////////////////////
+
+        Mat3f operator*(const Mat3f &m) const;
+
+        bool operator==(const Mat3f &m) const;
+
+        bool operator!=(const Mat3f &m) const;
+
+        /// constants /////////////////////////////////////////
+
+        static const Mat3f identity() {
+            return Mat3f(
+                1, 0, 0,
+                0, 1, 0,
+                0, 0, 1
+            );
+        }
+
+        static const Mat3f zero() {
+            return Mat3f(
+                0, 0, 0,
+                0, 0, 0,
+                0, 0, 0
+            );
+        }
+
+        /// misc //////////////////////////////////////////////
+
+        inline float det3x3() const;
+
+        Mat3f transposed() const;
+
+        Mat3f inversed() const;
+
+        friend std::ostream &operator<<(std::ostream &out, const Mat3f &m);
+    };
+
+    /// arithmetic (matrix x scalar) //////////////////////
+
+    inline Mat3f operator*(float a, const Mat3f &m);
+
+    ///////////////////////////////////////////////////////
     /// Mat4f /////////////////////////////////////////////
     ///////////////////////////////////////////////////////
 

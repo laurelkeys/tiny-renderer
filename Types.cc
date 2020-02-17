@@ -53,6 +53,190 @@ namespace Types {
         , w(v.w) { }
 
     ///////////////////////////////////////////////////////
+    /// Mat3f /////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    /// constructors //////////////////////////////////////
+
+    // Creates an identity matrix
+    Mat3f::Mat3f()
+        : _11(1), _12(0), _13(0)
+        , _21(0), _22(1), _23(0)
+        , _31(0), _32(0), _33(1) { }
+
+    Mat3f::Mat3f(float a11, float a12, float a13,
+                 float a21, float a22, float a23,
+                 float a31, float a32, float a33)
+        : _11(a11), _12(a12), _13(a13)
+        , _21(a21), _22(a22), _23(a23)
+        , _31(a31), _32(a32), _33(a33) { }
+
+    Mat3f::Mat3f(float a)
+        : _11(a), _12(a), _13(a)
+        , _21(a), _22(a), _23(a)
+        , _31(a), _32(a), _33(a) { }
+
+    Mat3f::Mat3f(const Mat3f &m)
+        : _11(m._11), _12(m._12), _13(m._13)
+        , _21(m._21), _22(m._22), _23(m._23)
+        , _31(m._31), _32(m._32), _33(m._33) { }
+
+    /// indexing //////////////////////////////////////////
+
+    // i-th row, starting at 0 (ending at 3)
+    Vec3f Mat3f::row(unsigned int i) const {
+        assert(i < 3);
+        return Vec3f(
+            _m[3 * i + 0],
+            _m[3 * i + 1],
+            _m[3 * i + 2]
+        );
+    }
+
+    void Mat3f::set_row(unsigned int i, const Vec3f &v) {
+        assert(i < 3);
+        _m[3 * i + 0] = v.x;
+        _m[3 * i + 1] = v.y;
+        _m[3 * i + 2] = v.z;
+    }
+
+    // j-th column, starting at 0 (ending at 3)
+    Vec3f Mat3f::col(unsigned int j) const {
+        assert(j < 3);
+        return Vec3f(
+            _m[3 * 0 + j],
+            _m[3 * 1 + j],
+            _m[3 * 2 + j]
+        );
+    }
+
+    void Mat3f::set_col(unsigned int j, const Vec3f &v) {
+        assert(j < 3);
+        _m[3 * 0 + j] = v.x;
+        _m[3 * 1 + j] = v.y;
+        _m[3 * 2 + j] = v.z;
+    }
+
+    // i-th row, j-th column, starting at 0 (ending at 3)
+    float Mat3f::cell(unsigned int i, unsigned int j) const {
+        assert(i < 3 && j < 3);
+        return _m[3 * i + j];
+    }
+
+    void Mat3f::set_cell(unsigned int i, unsigned int j, float a) {
+        assert(i < 3 && j < 3);
+        _m[3 * i + j] = a;
+    }
+
+    /// arithmetic (matrix x scalar) //////////////////////
+
+    Mat3f Mat3f::operator*(float a) const {
+        return Mat3f(
+            _11 * a, _12 * a, _13 * a,
+            _21 * a, _22 * a, _23 * a,
+            _31 * a, _32 * a, _33 * a
+        );
+    }
+
+    Mat3f &Mat3f::operator*=(float a) {
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                _m[3 * i + j] = a;
+        return *this;
+    }
+
+    /// arithmetic (matrix x vector) //////////////////////
+
+    Vec3f Mat3f::operator*(const Vec3f &v) const {
+        return Vec3f(
+            _11 * v.x + _12 * v.y + _13 * v.z,
+            _21 * v.x + _22 * v.y + _23 * v.z,
+            _31 * v.x + _32 * v.y + _33 * v.z
+        );
+    }
+
+    /// arithmetic (matrix x matrix) //////////////////////
+
+    Mat3f Mat3f::operator*(const Mat3f &m) const {
+        Mat3f result;
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                result._m[3 * i + j] = (
+                    _m[3 * i + 0] * m._m[3 * 0 + j] +
+                    _m[3 * i + 1] * m._m[3 * 1 + j] +
+                    _m[3 * i + 2] * m._m[3 * 2 + j]
+                );
+        return result;
+    }
+
+    bool Mat3f::operator==(const Mat3f &m) const {
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                if (m._m[3 * i + j] != _m[3 * i + j])
+                    return false;
+        return true;
+    }
+
+    bool Mat3f::operator!=(const Mat3f &m) const {
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                if (m._m[3 * i + j] != _m[3 * i + j])
+                    return true;
+        return false;
+    }
+
+    /// misc //////////////////////////////////////////////
+
+    inline float Mat4f::det3x3() const {
+        return (
+              _11 * (_22 * _33 - _23 * _32)
+            - _12 * (_21 * _33 - _23 * _31)
+            + _13 * (_21 * _32 - _22 * _31)
+        );
+    }
+
+    Mat3f Mat3f::transposed() const {
+        return Mat3f(
+            _11, _21, _31,
+            _12, _22, _32,
+            _13, _23, _33
+        );
+    }
+
+    Mat3f Mat3f::inversed() const {
+        // ref.: https://stackoverflow.com/a/18504573
+
+        Mat3f inv;
+        inv._m[0] = _m[4] * _m[8] - _m[7] * _m[5];
+        inv._m[1] = _m[2] * _m[7] - _m[1] * _m[8];
+        inv._m[2] = _m[1] * _m[5] - _m[2] * _m[4];
+        inv._m[3] = _m[5] * _m[6] - _m[3] * _m[8];
+        inv._m[4] = _m[0] * _m[8] - _m[2] * _m[6];
+        inv._m[5] = _m[3] * _m[2] - _m[0] * _m[5];
+        inv._m[6] = _m[3] * _m[7] - _m[6] * _m[4];
+        inv._m[7] = _m[6] * _m[1] - _m[0] * _m[7];
+        inv._m[8] = _m[0] * _m[4] - _m[3] * _m[1];
+
+        float det = det3x3();
+        assert(det != 0.0f);
+
+        return inv * (1 / det);
+    }
+
+    std::ostream &operator<<(std::ostream &out, const Mat3f &m) {
+        out << m.row(0) << std::endl; // (_11, _12, _13)
+        out << m.row(1) << std::endl; // (_21, _22, _23)
+        out << m.row(2) << std::endl; // (_31, _32, _33)
+        return out;
+    }
+
+    /// arithmetic (matrix x scalar) //////////////////////
+
+    inline Mat3f operator*(float a, const Mat3f &m) {
+        return m * a;
+    }
+
+    ///////////////////////////////////////////////////////
     /// Mat4f /////////////////////////////////////////////
     ///////////////////////////////////////////////////////
 
@@ -66,9 +250,9 @@ namespace Types {
         , _41(0), _42(0), _43(0), _44(1) { }
 
     Mat4f::Mat4f(float a11, float a12, float a13, float a14,
-            float a21, float a22, float a23, float a24,
-            float a31, float a32, float a33, float a34,
-            float a41, float a42, float a43, float a44)
+                 float a21, float a22, float a23, float a24,
+                 float a31, float a32, float a33, float a34,
+                 float a41, float a42, float a43, float a44)
         : _11(a11), _12(a12), _13(a13), _14(a14)
         , _21(a21), _22(a22), _23(a23), _24(a24)
         , _31(a31), _32(a32), _33(a33), _34(a34)
@@ -239,7 +423,7 @@ namespace Types {
 
     Mat4f Mat4f::inversed() const {
         // ref.: https://github.com/tunabrain/tungsten/blob/master/src/core/math/Mat4f.hpp
-        
+
         Mat4f inv;
         inv._m[ 0] =  _m[5]*_m[10]*_m[15] - _m[5]*_m[11]*_m[14] - _m[9]*_m[6]*_m[15] + _m[9]*_m[7]*_m[14] + _m[13]*_m[6]*_m[11] - _m[13]*_m[7]*_m[10];
         inv._m[ 1] = -_m[1]*_m[10]*_m[15] + _m[1]*_m[11]*_m[14] + _m[9]*_m[2]*_m[15] - _m[9]*_m[3]*_m[14] - _m[13]*_m[2]*_m[11] + _m[13]*_m[3]*_m[10];

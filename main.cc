@@ -27,14 +27,10 @@ Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
 const Mat4f viewport = Transform::viewport(resolution.x, resolution.y);
 
-const Vec3f light_direction = Vec3f(1, 1, 0).normalize();
+const Vec3f light_direction = Vec3f(1, 1, 1).normalize();
 const Vec3f up(0, 1, 0);
-const Vec3f eye(1, 1, 4);
+const Vec3f eye(1, 1, 3);
 const Vec3f center(0, 0, 0);
-
-const Mat4f model_view = Transform::look_at(eye, center, up);
-const Mat4f projection = Transform::projection((eye - center).length());
-// const Mat4f projection = Transform::perspective(90, resolution.x / resolution.y, 0, 255);
 
 ///////////////////////////////////////////////////////
 /// shaders ///////////////////////////////////////////
@@ -42,24 +38,25 @@ const Mat4f projection = Transform::projection((eye - center).length());
 
 struct ShaderImpl : public Shader {
     // uniforms are constant values passed to the shader
-    Mat4f uniform_mvp; // ModelViewProjection matrix
-    Mat4f uniform_mvp_inv_T; // (MVP^-1)^T, obs.: (A^-1)^T === (A^T)^-1
+    Mat4f uniform_mvp;
+    Mat4f uniform_mvp_inv_T;
 
     // varyings are written by vertex shader, read by fragment shader
     Vec2f varying_uv[3];
+    Vec3f varying_normal[3];
+    Vec4f varying_position[3];
 
     virtual Vec4f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
-
-        // read the vertex position from the .obj model file
-        Vec4f vertex_coords = Vec4f(model->position(iface, nthvert), 1); // [-1, 1]
-
-        // transform NDC to screen coordinates
-        return viewport * projection * model_view * vertex_coords;
+        varying_normal[nthvert] = model->normal(iface, nthvert);
+        varying_position[nthvert] = uniform_mvp * Vec4f(model->position(iface, nthvert), 1);
+        // NDC's [-1, 1] range transformed to screen coordinates by the MVP matrix
+        return varying_position[nthvert];
     }
 
     virtual bool fragment(Vec3f bary, TGAColor &color) override {
-        // interpolate uv for the current pixel
+        // interpolate values for the current pixel
+
         Vec3f vertices_u_coords = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);
         Vec3f vertices_v_coords = Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y);
         Vec2f uv = Vec2f(
@@ -67,32 +64,19 @@ struct ShaderImpl : public Shader {
             Geometry::barycentric_interp(bary, vertices_v_coords)
         );
 
-        // after a transformation by an affine mapping, normal vectors must be transformed by a mapping
-        // equal to the transpose of the inverse of the original mapping matrix (so they remain normal)
-        // ref.: http://www.songho.ca/opengl/gl_normaltransform.html
-        Vec3f n = (
-            uniform_mvp_inv_T * Vec4f(model->normal_map_at(uv), 1)
-        ).xyz().normalize();
+        Vec3f vertices_x_normal_coords = Vec3f(varying_normal[0].x, varying_normal[1].x, varying_normal[2].x);
+        Vec3f vertices_y_normal_coords = Vec3f(varying_normal[0].y, varying_normal[1].y, varying_normal[2].y);
+        Vec3f vertices_z_normal_coords = Vec3f(varying_normal[0].z, varying_normal[1].z, varying_normal[2].z);
+        Vec3f normal = Vec3f(
+            Geometry::barycentric_interp(bary, vertices_x_normal_coords),
+            Geometry::barycentric_interp(bary, vertices_y_normal_coords),
+            Geometry::barycentric_interp(bary, vertices_z_normal_coords)
+        );
 
-        Vec3f l = (
-            uniform_mvp * Vec4f(light_direction, 1)
-        ).xyz().normalize();
-        l.z *= -1; // FIXME this is a workaround for some error in the MVP matrix
+        float intensity = dot(normal, light_direction);
 
-        float intensity = dot(n, l);
-        Vec3f r = ((2 * intensity * n) - l).normalize(); // reflected light
-
-        float amb = 5;
         float diff = std::max(0.0f, intensity); // the light is behind when values are negative
-        float spec = std::pow(std::max(0.0f, r.z), model->specular_map_at(uv));
-
-        TGAColor c = model->diffuse_map_at(uv);
-        for (int i = 0; i < 3; ++i) {
-            color[i] = Math::clamp(
-                amb + c[i] * (diff + 0.6f * spec),
-                0.0f, 255.0f
-            );
-        }
+        color = model->diffuse_map_at(uv) * diff;
 
         // return false to signal that we won't discard this pixel
         return false;
@@ -111,6 +95,10 @@ int main(int argc, char **argv) {
     for (int i = 0; i < resolution.x * resolution.y; ++i) {
         z_buffer[i] = Math::MIN_INT;
     }
+
+    const Mat4f model_view = Transform::look_at(eye, center, up);
+    const Mat4f projection = Transform::projection((eye - center).length());
+    // const Mat4f projection = Transform::perspective(90, resolution.x / resolution.y, 0, 255);
 
     ShaderImpl shader;
     Mat4f mvp = projection * model_view;
