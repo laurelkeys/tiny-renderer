@@ -619,7 +619,7 @@ namespace Types {
 
         /// misc //////////////////////////////////////////////
 
-        inline float det3x3() const;
+        inline float det() const;
 
         Mat3f transposed() const;
 
@@ -722,6 +722,8 @@ namespace Types {
         }
 
         /// misc //////////////////////////////////////////////
+
+        inline float det() const;
 
         // Returns the determinant of the upper left 3 x 3 submatrix
         inline float det3x3() const;

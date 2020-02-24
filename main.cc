@@ -48,7 +48,7 @@ struct ShaderImpl : public Shader {
     Vec3f varying_position[3]; // vertices positions in NDC ([-1, 1])
     Vec4f varying_screen_coord[3]; // vertices positions in screen space
 
-    virtual Vec4f vertex(int iface, int nthvert) override {
+    Vec4f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
         varying_normal[nthvert] = model->normal(iface, nthvert);
         
@@ -59,7 +59,7 @@ struct ShaderImpl : public Shader {
         return varying_screen_coord[nthvert];
     }
 
-    virtual bool fragment(Vec3f bary, TGAColor &color) override {
+    bool fragment(Vec3f bary, TGAColor &color) override {
         // interpolate values for the current pixel
 
         Vec3f vertices_u_coords = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);

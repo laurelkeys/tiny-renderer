@@ -187,7 +187,7 @@ namespace Types {
 
     /// misc //////////////////////////////////////////////
 
-    inline float Mat3f::det3x3() const {
+    inline float Mat3f::det() const {
         return (
               _11 * (_22 * _33 - _23 * _32)
             - _12 * (_21 * _33 - _23 * _31)
@@ -217,7 +217,7 @@ namespace Types {
         inv._m[7] = _m[6] * _m[1] - _m[0] * _m[7];
         inv._m[8] = _m[0] * _m[4] - _m[3] * _m[1];
 
-        float det = det3x3();
+        float det = this->det();
         assert(det != 0.0f);
 
         return inv * (1 / det);
@@ -402,6 +402,25 @@ namespace Types {
     }
 
     /// misc //////////////////////////////////////////////
+
+    inline float Mat4f::det() const {
+        // ref.: https://stackoverflow.com/a/2980966
+
+        return (
+            _m[12]*_m[9]*_m[ 6]*_m[ 3]  -  _m[8]*_m[13]*_m[ 6]*_m[ 3]  -
+            _m[12]*_m[5]*_m[10]*_m[ 3]  +  _m[4]*_m[13]*_m[10]*_m[ 3]  +
+            _m[ 8]*_m[5]*_m[14]*_m[ 3]  -  _m[4]*_m[ 9]*_m[14]*_m[ 3]  -
+            _m[12]*_m[9]*_m[ 2]*_m[ 7]  +  _m[8]*_m[13]*_m[ 2]*_m[ 7]  +
+            _m[12]*_m[1]*_m[10]*_m[ 7]  -  _m[0]*_m[13]*_m[10]*_m[ 7]  -
+            _m[ 8]*_m[1]*_m[14]*_m[ 7]  +  _m[0]*_m[ 9]*_m[14]*_m[ 7]  +
+            _m[12]*_m[5]*_m[ 2]*_m[11]  -  _m[4]*_m[13]*_m[ 2]*_m[11]  -
+            _m[12]*_m[1]*_m[ 6]*_m[11]  +  _m[0]*_m[13]*_m[ 6]*_m[11]  +
+            _m[ 4]*_m[1]*_m[14]*_m[11]  -  _m[0]*_m[ 5]*_m[14]*_m[11]  -
+            _m[ 8]*_m[5]*_m[ 2]*_m[15]  +  _m[4]*_m[ 9]*_m[ 2]*_m[15]  +
+            _m[ 8]*_m[1]*_m[ 6]*_m[15]  -  _m[0]*_m[ 9]*_m[ 6]*_m[15]  -
+            _m[ 4]*_m[1]*_m[10]*_m[15]  +  _m[0]*_m[ 5]*_m[10]*_m[15]
+        );
+    }
 
     // Returns the determinant of the upper left 3 x 3 submatrix
     inline float Mat4f::det3x3() const {
