@@ -13,14 +13,9 @@ using Types::Vec3f;
 
 namespace Draw {
 
-    static TGAColor operator*(float a, const TGAColor &color) {
-        return TGAColor(
-            a * color.bgra[2], // R
-            a * color.bgra[1], // G
-            a * color.bgra[0], // B
-            color.bgra[3]      // A
-        );
-    }
+    ///////////////////////////////////////////////////////
+    /// 2D ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
 
     void point(Vec2i at,
                TGAImage &image, const TGAColor &color) {
@@ -76,54 +71,20 @@ namespace Draw {
         }
     }
 
-    void triangle(TriangleProps<Vec3i> pos, TriangleProps<Vec2f> uv, float intensity,
-                  int z_buffer[], TGAImage &image, Obj::Model *model) {
-        const Vec2i bbox_min = Vec2i(
-            std::max(0, Math::min(pos.a.x, pos.b.x, pos.c.x)),
-            std::max(0, Math::min(pos.a.y, pos.b.y, pos.c.y))
-        ); // max({0, 0}, min(a, b, c))
+    ///////////////////////////////////////////////////////
+    /// 3D (in screen space) //////////////////////////////
+    ///////////////////////////////////////////////////////
 
-        const Vec2i bbox_max = Vec2i(
-            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1),
-            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1)
-        ); // min(max(a, b, c), {width, height})
-
-        const Vec3f vertex_depths(pos.a.z, pos.b.z, pos.c.z);
-
-        Vec2i p;
-        for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
-            for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Geometry::barycentric_coords(p, pos.a.xy(), pos.b.xy(), pos.c.xy());
-
-                if (coords.x < 0 || coords.y < 0 || coords.z < 0)
-                    continue; // point lies outside the triangle
-
-                float pz = Geometry::barycentric_interp(coords, vertex_depths);
-                if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
-                    z_buffer[int(p.x + p.y * image.get_width())] = pz;
-
-                    TGAColor color = model->diffuse_map_at(
-                        Geometry::barycentric_interp(
-                            coords,
-                            uv.a, uv.b, uv.c
-                        )
-                    );
-                    image.set(p.x, p.y, intensity * color);
-                }
-            }
-        }
-    }
-
-    void triangle(TriangleProps<Types::Vec3i> pos, Shader &shader,
+    void triangle(TriangleProps<Types::Vec3f> pos, Shader &shader,
                   float z_buffer[], TGAImage &image, Obj::Model *model) {
         const Vec2i bbox_min = Vec2i(
-            std::max(0, Math::min(pos.a.x, pos.b.x, pos.c.x)),
-            std::max(0, Math::min(pos.a.y, pos.b.y, pos.c.y))
+            std::max(0.0f, Math::min(pos.a.x, pos.b.x, pos.c.x)),
+            std::max(0.0f, Math::min(pos.a.y, pos.b.y, pos.c.y))
         ); // max({0, 0}, min(a, b, c))
 
         const Vec2i bbox_max = Vec2i(
-            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1),
-            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1)
+            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1.0f),
+            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1.0f)
         ); // min(max(a, b, c), {width, height})
 
         const Vec3f vertex_depths(pos.a.z, pos.b.z, pos.c.z);
@@ -131,17 +92,15 @@ namespace Draw {
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Geometry::barycentric_coords(
-                    p, pos.a.xy(), pos.b.xy(), pos.c.xy()
-                ); // screen coordinates of point p
+                Geometry::PointProps point = Geometry::barycentric_coords(p, Geometry::TriangleXY<int>(pos.a, pos.b, pos.c));
 
-                if (coords.x < 0 || coords.y < 0 || coords.z < 0)
-                    continue; // point lies outside the triangle
+                if (!point.is_inside_triangle)
+                    continue;
 
-                float pz = Geometry::barycentric_interp(coords, vertex_depths);
+                float pz = Geometry::barycentric_interp(point.barycentric_coords, vertex_depths);
                 if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
                     TGAColor color;
-                    bool discard = shader.fragment(coords, color);
+                    bool discard = shader.fragment(point.barycentric_coords, color); // sets color
                     if (!discard) {
                         z_buffer[int(p.x + p.y * image.get_width())] = pz;
                         image.set(p.x, p.y, color);
