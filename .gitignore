@@ -3,7 +3,7 @@
 /*.tga
 /*.png
 model.*
-shaders.*
+shaders.txt
 
 # VS Code
 .vscode
