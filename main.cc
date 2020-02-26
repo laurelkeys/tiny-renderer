@@ -26,7 +26,7 @@ using Types::Mat3f;
 
 Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
-const Mat4f viewport = Transform::viewport(resolution.x, resolution.y); // depth = 255
+const Mat4f viewport = Transform::viewport(resolution.x, resolution.y, 1); // depth = 255 by default
 
 const Vec3f up(0, 1, 0);
 const Vec3f eye(0, 0, 3); // (0, 0, focal_dist)
@@ -92,12 +92,11 @@ int main(int argc, char **argv) {
     TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
     float *z_buffer = new float[resolution.x * resolution.y];
     for (int i = 0; i < resolution.x * resolution.y; ++i) {
-        z_buffer[i] = Math::MIN_INT;
+        z_buffer[i] = Math::MIN_FLOAT; // FIXME -Math::EPS_FLOAT should also work
     }
 
     const Mat4f model_view = Transform::look_at(eye, center, up);
     const Mat4f projection = Transform::projection((eye - center).length());
-    // const Mat4f projection = Transform::perspective(90, resolution.x / resolution.y, 0, 255);
 
     ShaderImpl shader;
     Mat4f mvp = projection * model_view;

@@ -97,11 +97,10 @@ namespace Draw {
                 if (!point.is_inside_triangle)
                     continue;
 
-                // interpolate z-values with the screen coordinates of point p
                 float pz = Geometry::barycentric_interp(point.barycentric_coords, vertex_depths);
                 if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
                     TGAColor color;
-                    bool discard = shader.fragment(point.barycentric_coords, color);
+                    bool discard = shader.fragment(point.barycentric_coords, color); // sets color
                     if (!discard) {
                         z_buffer[int(p.x + p.y * image.get_width())] = pz;
                         image.set(p.x, p.y, color);
