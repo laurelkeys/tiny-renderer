@@ -44,59 +44,37 @@ struct ShaderImpl : public Shader {
 
     // varyings are written by vertex shader, read by fragment shader
     Vec2f varying_uv[3];
+    Vec3f varying_intensity; // float varying_intensity[3]
     Vec3f varying_normal[3];
-    Vec3f varying_position[3]; // vertices positions in NDC ([-1, 1])
-    Vec4f varying_screen_coord[3]; // vertices positions in screen space
+    Vec4f varying_clip_coord[3];
+    Vec4f varying_ndc[3];
 
     Vec4f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
         varying_normal[nthvert] = model->normal(iface, nthvert);
 
-        varying_screen_coord[nthvert] = uniform_mvp * Vec4f(model->position(iface, nthvert), 1);
-        varying_position[nthvert] = varying_screen_coord[nthvert].homogenize().xyz();
+        varying_intensity[nthvert] = std::max(0.0f, dot(varying_normal[nthvert], light_direction));
 
-        // NDC's [-1, 1] range transformed to screen coordinates by the MVP matrix
-        return varying_screen_coord[nthvert];
+        // convert object space to clip space through the ModelViewProjection transform
+        varying_clip_coord[nthvert] = uniform_mvp * Vec4f(model->position(iface, nthvert), 1);
+
+        // convert clip space to NDC through perspective division
+        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenize();
+
+        // convert NDC to screen space through Viewport transform
+        Vec4f screen_coord = viewport * varying_ndc[nthvert];
+        assert(screen_coord.w == 1);
+        return screen_coord;
     }
 
     bool fragment(Vec3f bary, TGAColor &color) override {
         // interpolate values for the current pixel
-
-        Vec3f vertices_u_coords = Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x);
-        Vec3f vertices_v_coords = Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y);
         Vec2f uv = Vec2f(
-            Geometry::barycentric_interp(bary, vertices_u_coords),
-            Geometry::barycentric_interp(bary, vertices_v_coords)
+            Geometry::barycentric_interp(bary, Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x)),
+            Geometry::barycentric_interp(bary, Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y))
         );
 
-        Vec3f vertices_x_normal_coords = Vec3f(varying_normal[0].x, varying_normal[1].x, varying_normal[2].x);
-        Vec3f vertices_y_normal_coords = Vec3f(varying_normal[0].y, varying_normal[1].y, varying_normal[2].y);
-        Vec3f vertices_z_normal_coords = Vec3f(varying_normal[0].z, varying_normal[1].z, varying_normal[2].z);
-        Vec3f normal = Vec3f(
-            Geometry::barycentric_interp(bary, vertices_x_normal_coords),
-            Geometry::barycentric_interp(bary, vertices_y_normal_coords),
-            Geometry::barycentric_interp(bary, vertices_z_normal_coords)
-        ).normalize();
-
-        Mat3f A;
-        A.set_row(0, varying_position[1] - varying_position[0]);
-        A.set_row(1, varying_position[2] - varying_position[0]);
-        A.set_row(2, normal);
-
-        Mat3f A_inv = A.inversed();
-
-        Vec3f i = A_inv * Vec3f(varying_uv[1].x - varying_uv[0].x, varying_uv[2].x - varying_uv[0].x, 0);
-        Vec3f j = A_inv * Vec3f(varying_uv[1].y - varying_uv[0].y, varying_uv[2].y - varying_uv[0].y, 0);
-
-        Mat3f B;
-        B.set_col(0, i.normalize());
-        B.set_col(1, j.normalize());
-        B.set_col(2, normal);
-
-        Vec3f n = (B * model->normal_map_at(uv)).normalize();
-        // Darboux basis = (i, j, n)
-
-        float intensity = dot(n, light_direction);
+        float intensity = Geometry::barycentric_interp(bary, varying_intensity);
         float diff = std::max(0.0f, intensity); // the light is behind when values are negative
         color = model->diffuse_map_at(uv) * diff;
 
