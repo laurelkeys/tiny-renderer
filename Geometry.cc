@@ -8,7 +8,7 @@ using Types::Vec3f;
 
 namespace Geometry {
 
-    Vec3f barycentric_coords(const Vec2i &p, const Vec2i &a, const Vec2i &b, const Vec2i &c) {
+    PointProps barycentric_coords(const Vec2i &p, const Vec2i &a, const Vec2i &b, const Vec2i &c) {
         Vec2i AB = b - a;
         Vec2i AC = c - a;
         Vec2i PA = a - p;
@@ -23,17 +23,24 @@ namespace Geometry {
 
         float area2 = static_cast<float>(coords.z); // 2 * area(a, b, c)
 
+        PointProps point;
+
         if (std::abs(area2) <= Math::EPS_FLOAT) {
-            // the triangle is degenerate (area == 0),
-            // so we return a negative coordinate for it to be skipped
-            // (as it means p lies outside the triangle abc)
-            return Types::Vec3f(-1, 1, 1);
+            // the triangle is degenerate (area == 0), so we determine that
+            // the point p lies outside the triangle abc for it to be skipped
+            point.is_inside_triangle = false;
+            return point;
         }
 
-        return Vec3f(
+        point.barycentric_coords = Vec3f(
             1 - (coords.y + coords.x) / area2, // 1 - u - v
             coords.y / area2, // u = (PA.x * AC.y - AC.x * PA.y) / (AC.x * AB.y - AB.x * AC.y)
             coords.x / area2  // v = (AB.x * PA.y - AB.y * PA.x) / (AC.x * AB.y - AB.x * AC.y)
         );
+
+        point.is_inside_triangle = point.barycentric_coords.x >= 0 &&
+                                   point.barycentric_coords.y >= 0 &&
+                                   point.barycentric_coords.z >= 0;
+        return point;
     }
 }

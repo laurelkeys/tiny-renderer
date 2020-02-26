@@ -26,12 +26,12 @@ using Types::Mat3f;
 
 Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
-const Mat4f viewport = Transform::viewport(resolution.x, resolution.y);
+const Mat4f viewport = Transform::viewport(resolution.x, resolution.y); // depth = 255
 
-const Vec3f light_direction = Vec3f(1, 1, 1).normalize();
 const Vec3f up(0, 1, 0);
-const Vec3f eye(1, 1, 3);
+const Vec3f eye(0, 0, 3); // (0, 0, focal_dist)
 const Vec3f center(0, 0, 0);
+const Vec3f light_direction = Vec3f(1, 1, 1).normalize();
 
 ///////////////////////////////////////////////////////
 /// shaders ///////////////////////////////////////////
@@ -51,10 +51,10 @@ struct ShaderImpl : public Shader {
     Vec4f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
         varying_normal[nthvert] = model->normal(iface, nthvert);
-        
+
         varying_screen_coord[nthvert] = uniform_mvp * Vec4f(model->position(iface, nthvert), 1);
         varying_position[nthvert] = varying_screen_coord[nthvert].homogenize().xyz();
-        
+
         // NDC's [-1, 1] range transformed to screen coordinates by the MVP matrix
         return varying_screen_coord[nthvert];
     }

@@ -93,18 +93,18 @@ namespace Draw {
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Geometry::barycentric_coords(p, pos.a.xy(), pos.b.xy(), pos.c.xy());
+                Geometry::PointProps point = Geometry::barycentric_coords(p, pos.a.xy(), pos.b.xy(), pos.c.xy());
 
-                if (coords.x < 0 || coords.y < 0 || coords.z < 0)
-                    continue; // point lies outside the triangle
+                if (!point.is_inside_triangle)
+                    continue;
 
-                float pz = Geometry::barycentric_interp(coords, vertex_depths);
+                float pz = Geometry::barycentric_interp(point.barycentric_coords, vertex_depths);
                 if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
                     z_buffer[int(p.x + p.y * image.get_width())] = pz;
 
                     TGAColor color = model->diffuse_map_at(
                         Geometry::barycentric_interp(
-                            coords,
+                            point.barycentric_coords,
                             uv.a, uv.b, uv.c
                         )
                     );
@@ -131,13 +131,12 @@ namespace Draw {
         Vec2i p;
         for (p.x = bbox_min.x; p.x <= bbox_max.x; ++p.x) {
             for (p.y = bbox_min.y; p.y <= bbox_max.y; ++p.y) {
-                Vec3f coords = Geometry::barycentric_coords(
-                    p, pos.a.xy(), pos.b.xy(), pos.c.xy()
-                ); // screen coordinates of point p
+                Geometry::PointProps point = Geometry::barycentric_coords(p, pos.a.xy(), pos.b.xy(), pos.c.xy());
 
-                if (coords.x < 0 || coords.y < 0 || coords.z < 0)
-                    continue; // point lies outside the triangle
+                if (!point.is_inside_triangle)
+                    continue;
 
+                Vec3f coords = point.barycentric_coords; // screen coordinates of point p
                 float pz = Geometry::barycentric_interp(coords, vertex_depths);
                 if (z_buffer[int(p.x + p.y * image.get_width())] < pz) {
                     TGAColor color;

@@ -84,8 +84,7 @@ namespace Transform {
         );
     }
 
-    Mat4f viewport(int min_x, int min_y, int width, int height,
-                   int near, int far) {
+    Mat4f viewport(int min_x, int min_y, int width, int height, int near, int far) {
         float w = 0.5f * width;
         float h = 0.5f * height;
         float d = 0.5f * (far - near); // 0.5f * depth
@@ -109,16 +108,77 @@ namespace Transform {
         Vec3f z = (eye - target).normalize(); //  y |
         Vec3f x = cross(up, z).normalize();   //    o —— x
         Vec3f y = cross(z, x).normalize();    // z /
-        // FIXME check if the translation should be done
-        // with respect to the target, and not the eye (?)
+
+        // ModelView matrix
         return Mat4f(
             x.x, x.y, x.z, -dot(x, eye),
             y.x, y.y, y.z, -dot(y, eye),
             z.x, z.y, z.z, -dot(z, eye),
              0 ,  0 ,  0 ,       1
-        ); // ModelView matrix
+        );
+        //   |    |    |         |
+        //   v    v    v         v
+        //  left  up  forward  translation
     }
 
+    Types::Mat4f _orthographic(float left, float right, float bottom, float top, float near, float far) {
+        // ref.: http://docs.gl/gl3/glOrtho
+
+        assert(near >= 0 && far > 0);
+        float x_range = right - left;
+        float y_range = top - bottom;
+        float z_range = far - near;
+        assert(x_range > 0 && y_range > 0 && z_range > 0);
+        return Mat4f(
+            2 / x_range,     0      ,      0      , -(left + right) / x_range,
+                0      , 2 / y_range,      0      , -(bottom + top) / y_range,
+                0      ,     0      , -2 / z_range,  -(near + far)  / z_range,
+                0      ,     0      ,      0      ,                 1
+        );
+    }
+
+
+    /*
+     * float left = -right;
+     * float bottom = -top;
+     * return _orthographic(left, right, bottom, top, near, far);
+     */
+    Types::Mat4f orthographic(float right, float top, float near, float far) {
+        // ref.: http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+        assert(near >= 0 && far > 0 && right > 0 && top > 0);
+        float depth = far - near;
+        assert(depth > 0);
+        return Mat4f(
+            1 / right,    0   ,     0     ,             0       ,
+               0     , 1 / top,     0     ,             0       ,
+               0     ,    0   , -2 / depth,  -(near+far) / depth,
+               0     ,    0   ,     0     ,             1
+        );
+
+    }
+
+    Types::Mat4f _perspective(float left, float right, float bottom, float top, float near, float far) {
+        // ref.: http://docs.gl/gl3/glFrustum
+
+        assert(near >= 0 && far > 0);
+        float x_range = right - left;
+        float y_range = top - bottom;
+        float z_range = far - near;
+        assert(x_range > 0 && y_range > 0 && z_range > 0);
+        return Mat4f(
+            2*near / x_range,        0        , (left+right) / x_range,             0        ,
+                   0        , 2*near / y_range, (bottom+top) / y_range,             0        ,
+                   0        ,        0        ,  -(near+far) / z_range, -2*near*far / z_range,
+                   0        ,        0        ,             -1       ,              0
+        );
+    }
+
+    /*
+     * float half_h = near * std::tan(Math::deg2rad(vfov_deg) / 2);
+     * float half_w = half_h * aspect_ratio;
+     * return _perspective(-half_w, half_w, -half_h, half_h, near, far);
+     */
     Mat4f perspective(float vfov_deg, float aspect_ratio, float near, float far) {
         // ref.: http://www.songho.ca/opengl/gl_projectionmatrix.html
 

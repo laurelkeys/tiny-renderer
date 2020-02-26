@@ -6,10 +6,15 @@
 
 namespace Geometry {
 
+    struct PointProps {
+        bool is_inside_triangle; // true iff all barycentric_coords are positive
+        Types::Vec3f barycentric_coords; // (1-u-v, u, v)
+    };
+
     // Returns the barycentric coordinates of point p with respect to the triangle abc,
     // which express any position on the plane (p) as a linear combination of the three vertices positions (a, b, c)
     // obs.: the sum of the barycentric coordinates is 1, and p only lies inside abc iff all coordinates are positive
-    Types::Vec3f barycentric_coords(
+    PointProps barycentric_coords(
         const Types::Vec2i &p,
         const Types::Vec2i &a, const Types::Vec2i &b, const Types::Vec2i &c
     );
