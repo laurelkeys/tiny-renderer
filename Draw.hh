@@ -22,6 +22,7 @@ namespace Draw {
     template <typename T>
     struct TriangleProps {
         T a, b, c;
+
         TriangleProps(T props[3])
             : a(props[0])
             , b(props[1])

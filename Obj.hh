@@ -43,6 +43,7 @@ namespace Obj {
         VertexIndices v0;
         VertexIndices v1;
         VertexIndices v2;
+        // TODO use a std::vector<VertexIndices> instead (and treat non-triangular faces)
 
         FaceIndices() = default;
 
@@ -64,7 +65,9 @@ namespace Obj {
             std::vector<Types::Vec3f> _positions;
             std::vector<Types::Vec2f> _uv_textures;
             std::vector<Types::Vec3f> _normals; // obs.: normals might not be unit vectors
+
             std::vector<FaceIndices> _faces_indices;
+
             TGAImage _diffuse_map;  // color
             TGAImage _normal_map;   // bump
             TGAImage _specular_map; // reflection
@@ -83,10 +86,10 @@ namespace Obj {
 
             /// property accessors ////////////////////////////////
 
-            Primitives::Face face(int i); // builds a face from _faces_indices
+            Primitives::Face face(int i); // builds a face from _faces_indices[i]
 
             Primitives::Vertex vertex(VertexIndices i);
-            Primitives::Vertex vertex(int iface, int nthvert);
+            Primitives::Vertex vertex(int iface, int nthvert); // vertex(face_indices(iface)[nthvert])
 
             // below are some leaky abstractions,
             // you should favor using the ones above

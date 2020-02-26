@@ -11,12 +11,27 @@ namespace Geometry {
         Types::Vec3f barycentric_coords; // (1-u-v, u, v)
     };
 
+    template <typename T>
+    struct TriangleXY {
+        Types::Vec2<T> a, b, c;
+
+        TriangleXY(Types::Vec2<T> a, Types::Vec2<T> b, Types::Vec2<T> c)
+            : a(a)
+            , b(b)
+            , c(c) { }
+
+        TriangleXY(Types::Vec3<T> a, Types::Vec3<T> b, Types::Vec3<T> c)
+            : a(a.xy())
+            , b(b.xy())
+            , c(c.xy()) { }
+    };
+
     // Returns the barycentric coordinates of point p with respect to the triangle abc,
     // which express any position on the plane (p) as a linear combination of the three vertices positions (a, b, c)
     // obs.: the sum of the barycentric coordinates is 1, and p only lies inside abc iff all coordinates are positive
     PointProps barycentric_coords(
         const Types::Vec2i &p,
-        const Types::Vec2i &a, const Types::Vec2i &b, const Types::Vec2i &c
+        const TriangleXY<int> &triangle
     );
 
     // Uses the barycentric coordinates as interpolation coefficients
@@ -40,6 +55,14 @@ namespace Geometry {
         return coords.x * Types::Vec2<float>(a) +
                coords.y * Types::Vec2<float>(b) +
                coords.z * Types::Vec2<float>(c); // (1-u-v) * a + u * b + v * c
+    }
+
+    template <typename T>
+    Types::Vec2f barycentric_interp(
+        const Types::Vec3f &coords,
+        const TriangleXY<T> &abc
+    ) {
+        return barycentric_interp(coords, abc.a, abc.b, abc.c);
     }
 
     template <typename T>

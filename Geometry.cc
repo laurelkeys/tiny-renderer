@@ -8,10 +8,10 @@ using Types::Vec3f;
 
 namespace Geometry {
 
-    PointProps barycentric_coords(const Vec2i &p, const Vec2i &a, const Vec2i &b, const Vec2i &c) {
-        Vec2i AB = b - a;
-        Vec2i AC = c - a;
-        Vec2i PA = a - p;
+    PointProps barycentric_coords(const Vec2i &p, const TriangleXY<int> &triangle) {
+        Vec2i AB = triangle.b - triangle.a;
+        Vec2i AC = triangle.c - triangle.a;
+        Vec2i PA = triangle.a - p;
 
         // given a triangle abc and a point p, defined by:
         //   p = (1-u-v) * a + u * b + v * c = a + u * AB + v * AC,
