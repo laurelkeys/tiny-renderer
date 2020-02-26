@@ -13,6 +13,10 @@ using Types::Vec3f;
 
 namespace Draw {
 
+    ///////////////////////////////////////////////////////
+    /// 2D ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
     void point(Vec2i at,
                TGAImage &image, const TGAColor &color) {
         image.set(at.x, at.y, color);
@@ -67,16 +71,20 @@ namespace Draw {
         }
     }
 
-    void triangle(TriangleProps<Types::Vec3i> pos, Shader &shader,
+    ///////////////////////////////////////////////////////
+    /// 3D (in screen space) //////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    void triangle(TriangleProps<Types::Vec3f> pos, Shader &shader,
                   float z_buffer[], TGAImage &image, Obj::Model *model) {
         const Vec2i bbox_min = Vec2i(
-            std::max(0, Math::min(pos.a.x, pos.b.x, pos.c.x)),
-            std::max(0, Math::min(pos.a.y, pos.b.y, pos.c.y))
+            std::max(0.0f, Math::min(pos.a.x, pos.b.x, pos.c.x)),
+            std::max(0.0f, Math::min(pos.a.y, pos.b.y, pos.c.y))
         ); // max({0, 0}, min(a, b, c))
 
         const Vec2i bbox_max = Vec2i(
-            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1),
-            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1)
+            std::min(Math::max(pos.a.x, pos.b.x, pos.c.x), image.get_width() - 1.0f),
+            std::min(Math::max(pos.a.y, pos.b.y, pos.c.y), image.get_height() - 1.0f)
         ); // min(max(a, b, c), {width, height})
 
         const Vec3f vertex_depths(pos.a.z, pos.b.z, pos.c.z);

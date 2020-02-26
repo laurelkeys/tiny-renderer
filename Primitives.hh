@@ -44,6 +44,7 @@ namespace Primitives {
         Vertex v0;
         Vertex v1;
         Vertex v2;
+        // TODO use a std::vector<Vertex> instead (and treat non-triangular faces)
 
         Face() = default;
 

@@ -49,7 +49,7 @@ struct ShaderImpl : public Shader {
     Vec4f varying_clip_coord[3];
     Vec4f varying_ndc[3];
 
-    Vec4f vertex(int iface, int nthvert) override {
+    Vec3f vertex(int iface, int nthvert) override {
         varying_uv[nthvert] = model->uv(iface, nthvert);
         varying_normal[nthvert] = model->normal(iface, nthvert);
 
@@ -64,22 +64,21 @@ struct ShaderImpl : public Shader {
         // convert NDC to screen space through Viewport transform
         Vec4f screen_coord = viewport * varying_ndc[nthvert];
         assert(screen_coord.w == 1);
-        return screen_coord;
+        return screen_coord.xyz();
     }
 
-    bool fragment(Vec3f bary, TGAColor &color) override {
+    bool fragment(Vec3f frag_coord, TGAColor &frag_color) override {
         // interpolate values for the current pixel
         Vec2f uv = Vec2f(
-            Geometry::barycentric_interp(bary, Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x)),
-            Geometry::barycentric_interp(bary, Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y))
+            Geometry::barycentric_interp(frag_coord, Vec3f(varying_uv[0].x, varying_uv[1].x, varying_uv[2].x)),
+            Geometry::barycentric_interp(frag_coord, Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y))
         );
 
-        float intensity = Geometry::barycentric_interp(bary, varying_intensity);
+        float intensity = Geometry::barycentric_interp(frag_coord, varying_intensity);
         float diff = std::max(0.0f, intensity); // the light is behind when values are negative
-        color = model->diffuse_map_at(uv) * diff;
+        frag_color = model->diffuse_map_at(uv) * diff;
 
-        // return false to signal that we won't discard this pixel
-        return false;
+        return false; // signal that we won't discard this pixel
     }
 };
 
@@ -106,12 +105,9 @@ int main(int argc, char **argv) {
     shader.uniform_mvp_inv_T = mvp.inversed().transposed();
 
     for (int i = 0; i < model->n_of_faces(); ++i) {
-        Vec3i screen_coords[3];
+        Vec3f screen_coords[3];
         for (int j = 0; j < 3; ++j) {
-            // FIXME make screen_coords Vec4f instead
-            screen_coords[j] = Vec3i((
-                shader.vertex(i, j)
-            ).homogenize().xyz());
+            screen_coords[j] = shader.vertex(i, j);
         }
 
         Draw::triangle(

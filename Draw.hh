@@ -9,16 +9,6 @@
 
 namespace Draw {
 
-    void point(
-        Types::Vec2i at,
-        TGAImage &image, const TGAColor &color
-    );
-
-    void line(
-        Types::Vec2i from, Types::Vec2i to,
-        TGAImage &image, const TGAColor &color
-    );
-
     template <typename T>
     struct TriangleProps {
         T a, b, c;
@@ -29,8 +19,26 @@ namespace Draw {
             , c(props[2]) { }
     };
 
+    ///////////////////////////////////////////////////////
+    /// 2D ////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    void point(
+        Types::Vec2i at,
+        TGAImage &image, const TGAColor &color
+    );
+
+    void line(
+        Types::Vec2i from, Types::Vec2i to,
+        TGAImage &image, const TGAColor &color
+    );
+
+    ///////////////////////////////////////////////////////
+    /// 3D (in screen space) //////////////////////////////
+    ///////////////////////////////////////////////////////
+
     void triangle(
-        TriangleProps<Types::Vec3i> pos, Shader &shader,
+        TriangleProps<Types::Vec3f> pos, Shader &shader,
         float z_buffer[], TGAImage &image, Obj::Model *model
     );
 }
