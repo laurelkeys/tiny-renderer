@@ -39,6 +39,37 @@ namespace Shaders {
         Types::Vec4f varying_clip_coord[3];
         Types::Vec4f varying_ndc[3];
     };
+
+    ///////////////////////////////////////////////////////
+    /// Phong Shader //////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+    struct Phong : public Shader {
+
+        Types::Vec3f vertex(int iface, int nthvert) override;
+
+        bool fragment(Types::Vec3f frag_coord, TGAColor &frag_color) override;
+
+        /// uniforms //////////////////////////////////////////
+
+        Types::Mat4f uniform_mvp;
+        Types::Mat4f uniform_mvp_inv_T;
+        Types::Mat4f uniform_viewport;
+
+        float uniform_ka; // ambient reflection constant
+        float uniform_kd; // diffuse reflection constant
+        float uniform_ks; // specular reflection constant
+
+        Types::Vec3f uniform_light_direction;
+        Obj::Model *uniform_model;
+
+        /// varyings //////////////////////////////////////////
+
+        Types::Vec2f varying_uv[3];
+        Types::Vec3f varying_normal[3];
+        Types::Vec4f varying_clip_coord[3];
+        Types::Vec4f varying_ndc[3];
+    };
 }
 
 #endif // __SHADERS_HH__

@@ -44,12 +44,16 @@ int main(int argc, char **argv) {
     const Mat4f projection = Transform::projection((eye - center).length());
     const Mat4f mvp = projection * model_view;
 
-    Shaders::Texture shader;
-    shader.uniform_model           = model;
-    shader.uniform_viewport        = viewport;
-    shader.uniform_mvp             = mvp;
-    shader.uniform_mvp_inv_T       = mvp.inversed().transposed();
+    Shaders::Phong shader;
+    shader.uniform_model = model;
+    shader.uniform_viewport = viewport;
+    shader.uniform_mvp = mvp;
+    shader.uniform_mvp_inv_T = mvp.inversed().transposed();
     shader.uniform_light_direction = (mvp * Vec4f(light_direction, 0)).xyz().normalize();
+
+    shader.uniform_ka = 5;
+    shader.uniform_kd = 1;
+    shader.uniform_ks = 0.6;
 
     for (int i = 0; i < model->n_of_faces(); ++i) {
         Vec3f screen_coords[3];
