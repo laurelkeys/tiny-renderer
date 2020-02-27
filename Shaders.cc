@@ -15,7 +15,9 @@ namespace Shaders {
 
     Types::Vec3f Texture::vertex(int iface, int nthvert) {
         varying_uv[nthvert] = uniform_model->uv(iface, nthvert);
-        varying_normal[nthvert] = uniform_model->normal(iface, nthvert);
+        varying_normal[nthvert] = (
+           uniform_mvp_inv_T * Vec4f(uniform_model->normal(iface, nthvert), 0)
+        ).xyz();
 
         varying_intensity[nthvert] = std::max(0.0f, dot(varying_normal[nthvert], uniform_light_direction));
 
@@ -38,17 +40,14 @@ namespace Shaders {
             Geometry::barycentric_interp(frag_coord, Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y))
         );
 
-        Vec3f normal = (
-            uniform_mvp_inv_T * Vec4f(uniform_model->normal_map_at(uv), 1)
-        ).xyz().normalize();
+        Vec3f normal = Vec3f(
+            Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].x, varying_normal[1].x, varying_normal[2].x)),
+            Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].y, varying_normal[1].y, varying_normal[2].y)),
+            Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].z, varying_normal[1].z, varying_normal[2].z))
+        ).normalize();
 
-        Vec3f light = (
-            uniform_mvp * Vec4f(uniform_light_direction, 1)
-        ).xyz().normalize();
+        float intensity = std::max(0.0f, dot(normal, uniform_light_direction)); // the light is behind when values are negative
 
-        // FIXME: float intensity = dot(normal, light);
-        float intensity = Geometry::barycentric_interp(frag_coord, varying_intensity);
-        intensity = std::max(0.0f, intensity); // the light is behind when values are negative
         frag_color = uniform_model->diffuse_map_at(uv) * intensity;
 
         return false; // signal that we won't discard this pixel

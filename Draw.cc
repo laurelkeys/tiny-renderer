@@ -76,7 +76,7 @@ namespace Draw {
     ///////////////////////////////////////////////////////
 
     void triangle(TriangleProps<Types::Vec3f> pos, Shader &shader,
-                  float z_buffer[], TGAImage &image, Obj::Model *model) {
+                  TGAImage &image, float z_buffer[]) {
         const Vec2i bbox_min = Vec2i(
             std::max(0.0f, Math::min(pos.a.x, pos.b.x, pos.c.x)),
             std::max(0.0f, Math::min(pos.a.y, pos.b.y, pos.c.y))

@@ -19,6 +19,7 @@ namespace Shaders {
     struct Texture : public Shader {
 
         Types::Vec3f vertex(int iface, int nthvert) override;
+
         bool fragment(Types::Vec3f frag_coord, TGAColor &frag_color) override;
 
         /// uniforms //////////////////////////////////////////

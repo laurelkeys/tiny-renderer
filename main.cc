@@ -27,7 +27,7 @@ const Mat4f viewport = Transform::viewport(resolution.x, resolution.y, 1);
 
 const Vec3f up(0, 1, 0);
 const Vec3f eye(0, 0, 3); // (0, 0, focal_dist)
-const Vec3f center(0, 0, 0);
+const Vec3f center(0, 0, 0); // target
 const Vec3f light_direction = Vec3f(1, 1, 1).normalize();
 
 
@@ -42,26 +42,21 @@ int main(int argc, char **argv) {
 
     const Mat4f model_view = Transform::look_at(eye, center, up);
     const Mat4f projection = Transform::projection((eye - center).length());
+    const Mat4f mvp = projection * model_view;
 
     Shaders::Texture shader;
-    shader.uniform_model = model;
-    shader.uniform_light_direction = light_direction;
-
-    Mat4f mvp = projection * model_view;
-    shader.uniform_mvp       = mvp;
-    shader.uniform_mvp_inv_T = mvp.inversed().transposed();
-    shader.uniform_viewport  = viewport;
+    shader.uniform_model           = model;
+    shader.uniform_viewport        = viewport;
+    shader.uniform_mvp             = mvp;
+    shader.uniform_mvp_inv_T       = mvp.inversed().transposed();
+    shader.uniform_light_direction = (mvp * Vec4f(light_direction, 0)).xyz().normalize();
 
     for (int i = 0; i < model->n_of_faces(); ++i) {
         Vec3f screen_coords[3];
         for (int j = 0; j < 3; ++j) {
             screen_coords[j] = shader.vertex(i, j);
         }
-
-        Draw::triangle(
-            screen_coords, shader,
-            z_buffer, image, model
-        );
+        Draw::triangle(screen_coords, shader, image, z_buffer);
     }
 
     image.flip_vertically(); // have the origin at the bottom left corner of the image
