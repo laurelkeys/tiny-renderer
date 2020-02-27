@@ -82,11 +82,14 @@ namespace Shaders {
             Geometry::barycentric_interp(frag_coord, Vec3f(varying_uv[0].y, varying_uv[1].y, varying_uv[2].y))
         );
 
-        Vec3f normal = Vec3f(
-            Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].x, varying_normal[1].x, varying_normal[2].x)),
-            Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].y, varying_normal[1].y, varying_normal[2].y)),
-            Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].z, varying_normal[1].z, varying_normal[2].z))
-        ).normalize();
+        // Vec3f normal = Vec3f(
+        //     Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].x, varying_normal[1].x, varying_normal[2].x)),
+        //     Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].y, varying_normal[1].y, varying_normal[2].y)),
+        //     Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].z, varying_normal[1].z, varying_normal[2].z))
+        // ).normalize();
+        Vec3f normal = (
+           uniform_mvp_inv_T * Vec4f(uniform_model->normal_map_at(uv), 0)
+        ).xyz().normalize();
 
         Vec3f light_dir = uniform_light_direction.normalized(); // make sure it's normalized
 
@@ -94,7 +97,7 @@ namespace Shaders {
         Vec3f reflected_light_dir = (2 * intensity * normal - light_dir).normalize();
 
         float spec = std::pow(std::max(0.0f, reflected_light_dir.z), 
-                              uniform_model->specular_map_at(uv));
+                              uniform_model->specular_map_at(uv)); // material shininess
         float diff = std::max(0.0f, intensity); // the light is behind when values are negative
 
         TGAColor color = uniform_model->diffuse_map_at(uv);
