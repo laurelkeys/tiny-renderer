@@ -68,9 +68,11 @@ namespace Obj {
 
             std::vector<FaceIndices> _faces_indices;
 
+            // ref.: https://help.poliigon.com/en/articles/1712652-what-are-the-different-texture-maps-for
             TGAImage _diffuse_map;  // color
             TGAImage _normal_map;   // bump
             TGAImage _specular_map; // reflection
+
 
             void load_texture(
                 std::string filename, const char *suffix,

@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     TGAImage image(resolution.x, resolution.y, TGAImage::RGB);
     float *z_buffer = new float[resolution.x * resolution.y];
     for (int i = 0; i < resolution.x * resolution.y; ++i) {
-        z_buffer[i] = Math::MIN_FLOAT; // FIXME should also work with -Math::EPS_FLOAT
+        z_buffer[i] = Math::MIN_FLOAT; // FIXME should also work with -Math::EPS_FLOAT (?)
     }
 
     const Mat4f model_view = Transform::look_at(eye, center, up);
