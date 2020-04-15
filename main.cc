@@ -88,4 +88,5 @@ int main(int argc, char **argv) {
 // 3. better handle textures (missing ones / other names)
 // 4. parse .obj files with faces that are not triangular
 // 5. allow shaders to be written as separate files (requires parsing)
+// 6. treat barycentric coordinates as "weights" to simplify interpolation code
 //

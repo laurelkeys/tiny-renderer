@@ -59,7 +59,7 @@ namespace Shaders {
         varying_clip_coord[nthvert] = uniform_mvp * Vec4f(uniform_model->position(iface, nthvert), 1);
 
         // convert clip space to NDC through perspective division
-        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenize();
+        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenized();
 
         // convert NDC to screen space through Viewport transform
         Vec4f screen_coord = uniform_viewport * varying_ndc[nthvert];
@@ -98,7 +98,7 @@ namespace Shaders {
         varying_clip_coord[nthvert] = uniform_mvp * Vec4f(uniform_model->position(iface, nthvert), 1);
 
         // convert clip space to NDC through perspective division
-        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenize();
+        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenized();
 
         // convert NDC to screen space through Viewport transform
         Vec4f screen_coord = uniform_viewport * varying_ndc[nthvert];
@@ -140,7 +140,7 @@ namespace Shaders {
         varying_clip_coord[nthvert] = uniform_mvp * Vec4f(uniform_model->position(iface, nthvert), 1);
 
         // convert clip space to NDC through perspective division
-        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenize();
+        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenized();
 
         // convert NDC to screen space through Viewport transform
         Vec4f screen_coord = uniform_viewport * varying_ndc[nthvert];
@@ -189,7 +189,7 @@ namespace Shaders {
         varying_clip_coord[nthvert] = uniform_mvp * Vec4f(uniform_model->position(iface, nthvert), 1);
 
         // convert clip space to NDC through perspective division
-        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenize();
+        varying_ndc[nthvert] = varying_clip_coord[nthvert].homogenized();
 
         // convert NDC to screen space through Viewport transform
         Vec4f screen_coord = uniform_viewport * varying_ndc[nthvert];

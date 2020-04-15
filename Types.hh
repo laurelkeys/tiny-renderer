@@ -482,6 +482,14 @@ namespace Types {
             return *this;
         }
 
+        Vec4 homogenized() const {
+            assert(w != T(0));
+            T inv_w = T(1) / w;
+            Vec4 homogenized = *this * inv_w;
+            assert(homogenized.w == T(1));
+            return homogenized;
+        }
+
         Vec4 &homogenize() {
             assert(w != T(0));
             T inv_w = T(1) / w;

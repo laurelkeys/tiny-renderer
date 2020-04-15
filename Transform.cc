@@ -105,20 +105,18 @@ namespace Transform {
     }
 
     Mat4f look_at(const Vec3f &eye, const Vec3f &target, const Vec3f &up) {
+        // ref.: http://www.songho.ca/opengl/gl_camera.html#lookat
+
         Vec3f z = (eye - target).normalize(); //  y |
         Vec3f x = cross(up, z).normalize();   //    o —— x
-        Vec3f y = cross(z, x).normalize();    // z /
+        Vec3f y = cross(z, x);                // z /
 
-        // ModelView matrix
         return Mat4f(
             x.x, x.y, x.z, -dot(x, eye),
             y.x, y.y, y.z, -dot(y, eye),
             z.x, z.y, z.z, -dot(z, eye),
              0 ,  0 ,  0 ,       1
         );
-        //   |    |    |         |
-        //   v    v    v         v
-        //  left  up  forward  translation
     }
 
     Types::Mat4f _orthographic(float left, float right, float bottom, float top, float near, float far) {
