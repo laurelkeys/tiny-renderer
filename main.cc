@@ -22,10 +22,12 @@ using Types::Mat3f;
 
 Obj::Model *model = nullptr;
 const Vec2i resolution(800, 800);
-const Mat4f viewport = Transform::viewport(resolution.x, resolution.y, 1);
+const Mat4f viewport = Transform::viewport(//resolution.x, resolution.y, 1);
+    resolution.x / 8, resolution.y / 8, 3 * resolution.x / 4, 3 * resolution.y / 4, 0, 1
+);
 
 const Vec3f up(0, 1, 0);
-const Vec3f eye(0, 0, 3); // (0, 0, focal_dist)
+const Vec3f eye(1, 1, 3); // (0, 0, focal_dist)
 const Vec3f center(0, 0, 0); // target
 const Vec3f light_direction = Vec3f(1, 1, 1).normalize();
 
@@ -66,12 +68,12 @@ int main(int argc, char **argv) {
                 screen_coords[j] = shader.vertex(i, j);
             Draw::triangle(screen_coords, shader, image, z_buffer);
         }
+        delete model;
     }
 
     image.flip_vertically(); // have the origin at the bottom left corner of the image
     image.write_tga_file("output.tga");
 
-    delete model;
     delete[] z_buffer;
     return 0;
 }
@@ -89,4 +91,5 @@ int main(int argc, char **argv) {
 // 4. parse .obj files with faces that are not triangular
 // 5. allow shaders to be written as separate files (requires parsing)
 // 6. treat barycentric coordinates as "weights" to simplify interpolation code
+// 7. refactor all code using equals to compare floats
 //

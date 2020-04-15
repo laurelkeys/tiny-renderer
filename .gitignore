@@ -4,6 +4,7 @@
 /*.png
 model.*
 shaders.txt
+obj/test_grid/
 
 # VS Code
 .vscode

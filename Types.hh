@@ -486,7 +486,7 @@ namespace Types {
             assert(w != T(0));
             T inv_w = T(1) / w;
             Vec4 homogenized = *this * inv_w;
-            assert(homogenized.w == T(1));
+            homogenized.w = T(1); // FIXME refactor code using == to compare floats
             return homogenized;
         }
 
