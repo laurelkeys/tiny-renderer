@@ -31,6 +31,10 @@ namespace Math {
 
     float rad2deg(float angle_rad);
 
+    float srgb2linear(float color_srgb);
+
+    float linear2srgb(float color_linear);
+
     template <typename T>
     T min(const T &a, const T &b) {
         return a < b ? a : b;
@@ -77,7 +81,7 @@ namespace Math {
         return t * t * (T(3) - T(2) * t); // evaluate polynomial
     }
 
-    // Perform smooth(er) (quintic Hermite) interpolation between 0 and 1 when min_val < val < max_val, 
+    // Perform smooth(er) (quintic Hermite) interpolation between 0 and 1 when min_val < val < max_val,
     // using a function that has zero 1st and 2nd-order derivatives at val = min_val and val = max_val
     template <typename T>
     T smootherstep(T min_val, T max_val, T val) {

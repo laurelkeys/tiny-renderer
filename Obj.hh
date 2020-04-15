@@ -73,7 +73,6 @@ namespace Obj {
             TGAImage _normal_map;   // bump
             TGAImage _specular_map; // reflection
 
-
             void load_texture(
                 std::string filename, const char *suffix,
                 TGAImage &image
