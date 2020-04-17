@@ -49,15 +49,11 @@ int main(int argc, char **argv) {
     const Mat4f projection = Transform::projection((eye - center).length());
     const Mat4f mvp = projection * model_view;
 
-    Shaders::Phong shader;
+    Shaders::Texture shader;
     shader.uniform_viewport = viewport;
     shader.uniform_mvp = mvp;
     shader.uniform_mvp_inv_T = mvp.inversed().transposed();
     shader.uniform_light_direction = (mvp * Vec4f(light_direction, 0)).xyz().normalize();
-
-    shader.uniform_ka = 5;
-    shader.uniform_kd = 1;
-    shader.uniform_ks = 0.6;
 
     for (int m = 1; m < argc; ++m) {
         model = new Obj::Model(argv[m]);
@@ -72,7 +68,7 @@ int main(int argc, char **argv) {
     }
 
     image.flip_vertically(); // have the origin at the bottom left corner of the image
-    image.write_tga_file("output.tga");
+    image.write_tga_file("../output.tga");
 
     delete[] z_buffer;
     return 0;
