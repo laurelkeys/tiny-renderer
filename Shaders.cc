@@ -6,6 +6,7 @@ using Types::Vec2f;
 using Types::Vec3f;
 using Types::Vec4f;
 using Types::Mat4f;
+using Types::Mat3f;
 
 namespace Shaders {
 
@@ -119,8 +120,29 @@ namespace Shaders {
             Geometry::barycentric_interp(frag_coord, Vec3f(varying_normal[0].z, varying_normal[1].z, varying_normal[2].z))
         ).normalize();
 
-        float intensity = std::max(0.0f, dot(normal, uniform_light_direction)); // the light is behind when values are negative
+        // tangent space normal mapping
+        Mat3f A;
+        A.set_row(0, (varying_ndc[1] - varying_ndc[0]).xyz()); // B - A = AB
+        A.set_row(1, (varying_ndc[2] - varying_ndc[0]).xyz()); // C - A = AC
+        A.set_row(2, normal);
 
+        // compute the Darboux basis (i, j, normal)
+        Mat3f A_inv = A.inversed();
+        Vec3f i = A_inv * Vec3f(varying_uv[1].x - varying_uv[0].x, // B.u - A.u
+                                varying_uv[2].x - varying_uv[0].x, // C.u - A.u
+                                0).normalize();
+        Vec3f j = A_inv * Vec3f(varying_uv[1].y - varying_uv[0].y, // B.v - A.v
+                                varying_uv[2].y - varying_uv[0].y, // C.v - A.v
+                                0).normalize();
+        Mat3f B; // tangent basis
+        B.set_col(0, i);
+        B.set_col(0, j);
+        B.set_col(0, normal);
+
+        // change from tanget basis to global coordinates
+        Vec3f n = (B * uniform_model->normal_map_at(uv)).normalize();
+
+        float intensity = std::max(0.0f, dot(n, uniform_light_direction)); // the light is behind when values are negative
         frag_color = uniform_model->diffuse_map_at(uv) * intensity;
 
         return false; // signal that we won't discard this pixel

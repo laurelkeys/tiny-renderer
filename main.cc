@@ -92,4 +92,5 @@ int main(int argc, char **argv) {
 // 5. allow shaders to be written as separate files (requires parsing)
 // 6. treat barycentric coordinates as "weights" to simplify interpolation code
 // 7. refactor all code using equals to compare floats
+// 8. return clip coordiantes in shaders, instead of screen coordinates
 //
